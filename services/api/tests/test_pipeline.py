@@ -58,6 +58,14 @@ def test_extract_entities_finds_tech_and_people():
     assert "Ada Lovelace" in ents
 
 
+def test_entity_aliases_canonicalize():
+    a = dict(extract_entities("We chose PostgreSQL for storage"))
+    b = dict(extract_entities("Postgres vacuum settings matter"))
+    assert "postgres" in a and "postgres" in b
+    dotted = dict(extract_entities("The app uses Next.js routing"))
+    assert dotted.get("nextjs") == "technology"
+
+
 def test_importance_bounds():
     assert 0.2 <= score_importance("x", "note") <= 0.95
     long_important = "This is an important decision. " * 200

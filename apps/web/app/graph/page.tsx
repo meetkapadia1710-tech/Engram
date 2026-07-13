@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useWorkspace } from "@/app/providers";
@@ -8,7 +8,10 @@ import type { GraphData, GraphNode } from "@/lib/types";
 
 /**
  * Force-directed graph explorer — hand-rolled physics (repulsion + spring +
- * centering) rendered as SVG. No canvas/d3 dependency; ~150 nodes stay smooth.
+ * centering) rendered as SVG. The layout is computed synchronously (a few
+ * hundred k pair-ops for ~150 nodes, well under a frame) rather than via
+ * requestAnimationFrame: rAF is throttled to zero in backgrounded/embedded
+ * tabs, which would leave the graph permanently empty.
  */
 
 interface SimNode extends GraphNode {
@@ -23,64 +26,58 @@ const KIND_COLOR: Record<string, string> = {
   entity: "#22d3ee",
 };
 
-function useSimulation(data: GraphData | undefined, width: number, height: number) {
-  const [nodes, setNodes] = useState<SimNode[]>([]);
-  const frame = useRef<number>(0);
+function computeLayout(data: GraphData, width: number, height: number): SimNode[] {
+  const sim: SimNode[] = data.nodes.map((n, i) => ({
+    ...n,
+    x: width / 2 + 180 * Math.cos((2 * Math.PI * i) / data.nodes.length),
+    y: height / 2 + 180 * Math.sin((2 * Math.PI * i) / data.nodes.length),
+    vx: 0,
+    vy: 0,
+  }));
+  const byId = new Map(sim.map((n) => [n.id, n]));
 
-  useEffect(() => {
-    if (!data) return;
-    const sim: SimNode[] = data.nodes.map((n, i) => ({
-      ...n,
-      x: width / 2 + 180 * Math.cos((2 * Math.PI * i) / data.nodes.length),
-      y: height / 2 + 180 * Math.sin((2 * Math.PI * i) / data.nodes.length),
-      vx: 0,
-      vy: 0,
-    }));
-    const byId = new Map(sim.map((n) => [n.id, n]));
-    let ticks = 0;
-
-    function tick() {
-      ticks += 1;
-      // repulsion
-      for (let i = 0; i < sim.length; i++) {
-        for (let j = i + 1; j < sim.length; j++) {
-          const a = sim[i], b = sim[j];
-          let dx = a.x - b.x, dy = a.y - b.y;
-          let d2 = dx * dx + dy * dy;
-          if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 1; }
-          const f = 1400 / d2;
-          const d = Math.sqrt(d2);
-          a.vx += (dx / d) * f; a.vy += (dy / d) * f;
-          b.vx -= (dx / d) * f; b.vy -= (dy / d) * f;
-        }
-      }
-      // springs
-      for (const e of data!.edges) {
-        const a = byId.get(e.source), b = byId.get(e.target);
-        if (!a || !b) continue;
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const d = Math.sqrt(dx * dx + dy * dy) || 1;
-        const f = (d - 90) * 0.012 * (0.5 + e.weight);
+  for (let ticks = 0; ticks < 220; ticks++) {
+    // repulsion
+    for (let i = 0; i < sim.length; i++) {
+      for (let j = i + 1; j < sim.length; j++) {
+        const a = sim[i], b = sim[j];
+        let dx = a.x - b.x, dy = a.y - b.y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 1; }
+        const f = 1400 / d2;
+        const d = Math.sqrt(d2);
         a.vx += (dx / d) * f; a.vy += (dy / d) * f;
         b.vx -= (dx / d) * f; b.vy -= (dy / d) * f;
       }
-      // centering + integrate
-      for (const n of sim) {
-        n.vx += (width / 2 - n.x) * 0.004;
-        n.vy += (height / 2 - n.y) * 0.004;
-        n.vx *= 0.82; n.vy *= 0.82;
-        n.x += n.vx; n.y += n.vy;
-        n.x = Math.max(24, Math.min(width - 24, n.x));
-        n.y = Math.max(24, Math.min(height - 24, n.y));
-      }
-      setNodes([...sim]);
-      if (ticks < 220) frame.current = requestAnimationFrame(tick);
     }
-    frame.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame.current);
-  }, [data, width, height]);
+    // springs
+    for (const e of data.edges) {
+      const a = byId.get(e.source), b = byId.get(e.target);
+      if (!a || !b) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const f = (d - 90) * 0.012 * (0.5 + e.weight);
+      a.vx += (dx / d) * f; a.vy += (dy / d) * f;
+      b.vx -= (dx / d) * f; b.vy -= (dy / d) * f;
+    }
+    // centering + integrate
+    for (const n of sim) {
+      n.vx += (width / 2 - n.x) * 0.004;
+      n.vy += (height / 2 - n.y) * 0.004;
+      n.vx *= 0.82; n.vy *= 0.82;
+      n.x += n.vx; n.y += n.vy;
+      n.x = Math.max(24, Math.min(width - 24, n.x));
+      n.y = Math.max(24, Math.min(height - 24, n.y));
+    }
+  }
+  return sim;
+}
 
-  return nodes;
+function useSimulation(data: GraphData | undefined, width: number, height: number) {
+  return useMemo(
+    () => (data ? computeLayout(data, width, height) : []),
+    [data, width, height],
+  );
 }
 
 export default function GraphPage() {

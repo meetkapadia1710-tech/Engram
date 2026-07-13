@@ -72,6 +72,17 @@ TECH_LEXICON = {
     "hnsw", "transformer", "pytorch", "tensorflow", "numpy", "pandas", "api",
 }
 
+# canonical entity names: variants collapse to one graph node
+_ALIASES = {
+    "postgresql": "postgres", "k8s": "kubernetes", "js": "javascript",
+    "ts": "typescript", "py": "python", "golang": "go",
+    "embeddings": "embedding",
+}
+# dotted/multiword tech names the tokenizer would split apart
+_DOTTED_FORMS = {
+    "next.js": "nextjs", "node.js": "node", "vue.js": "vue", "nest.js": "nestjs",
+}
+
 _CAP_SPAN = re.compile(r"\b([A-Z][a-zA-Z0-9+.#-]*(?:\s+[A-Z][a-zA-Z0-9+.#-]*){0,3})\b")
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
 _URL = re.compile(r"https?://[^\s)>\]]+")
@@ -92,8 +103,14 @@ def extract_entities(text: str) -> list[tuple[str, str]]:
     """Return (name, kind) pairs. Deterministic heuristics, deduplicated."""
     found: dict[str, str] = {}
 
+    lowered = text.lower()
+    for dotted, canonical in _DOTTED_FORMS.items():
+        if dotted in lowered:
+            found.setdefault(canonical, "technology")
+
     # raw tokens: lexicon entries are surface forms ("postgres", not "postgre")
     for tok in _raw_tokens(text):
+        tok = _ALIASES.get(tok, tok)
         if tok in TECH_LEXICON:
             found.setdefault(tok, "technology")
 
@@ -105,7 +122,7 @@ def extract_entities(text: str) -> list[tuple[str, str]]:
             continue
         if name.lower() in _tokens(name.lower()) and len(words) == 1 and len(name) < 3:
             continue
-        low = name.lower()
+        low = _ALIASES.get(name.lower(), name.lower())
         if low in TECH_LEXICON:
             found.setdefault(low, "technology")
             continue
@@ -164,7 +181,8 @@ def detect_relationships(
 
     * cosine ≥ 0.92 → duplicate_of
     * cosine ≥ 0.55 → related_to (weight = similarity)
-    * ≥ 1 shared entity with some semantic overlap → mentions edge (Jaccard-weighted)
+    * ≥ 1 shared entity → mentions edge (Jaccard-weighted; capped by max_links
+      so hub entities like "python" can't turn the graph into a hairball)
     """
     own_vec = memory.embedding
     own_entities = {l.entity_id for l in memory.entity_links}
@@ -188,10 +206,10 @@ def detect_relationships(
             scored.append((sim, "duplicate_of", other))
         elif sim >= 0.55:
             scored.append((sim, "related_to", other))
-        elif shared and (sim >= 0.15 or len(shared) >= 2):
+        elif shared:
             union = own_entities | other_entities
             jacc = len(shared) / (len(union) or 1)
-            scored.append((0.3 + 0.5 * jacc, "mentions", other))
+            scored.append((0.25 + 0.5 * jacc + 0.25 * max(sim, 0), "mentions", other))
 
     scored.sort(key=lambda t: t[0], reverse=True)
     for weight, kind, other in scored[:max_links]:
