@@ -48,12 +48,12 @@ npm run dev
 python scripts/seed.py
 ```
 
-By default Engram runs on SQLite + the built-in local embedder — no external services, no keys. Point `ENGRAM_DATABASE_URL` at Postgres/pgvector and set `ENGRAM_EMBEDDING_PROVIDER=openai|gemini|ollama` to scale up. See [docs/deployment.md](docs/deployment.md).
+By default Engram is powered by Supermemory Local for its storage engine — no external vector databases required. Point `SUPERMEMORY_URL` to your Supermemory instance to scale up. See [docs/deployment.md](docs/deployment.md) for more details.
 
 ## Quickstart (Docker)
 
 ```bash
-docker compose up   # api :8000, web :3000, postgres+pgvector, redis
+docker compose up   # api :8000, web :3000, supermemory :6767, postgres, redis
 ```
 
 ## Documentation

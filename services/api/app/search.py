@@ -180,74 +180,50 @@ def hybrid_search(
     date_to: str | None = None,
     mode: str = "hybrid",  # hybrid | vector | keyword
 ) -> list[SearchHit]:
-    memories = load_candidates(
-        db, workspace_id, types=types, tags=tags, entities=entities,
-        date_from=date_from, date_to=date_to,
-    )
-    if not memories:
-        return []
-
-    # vector ranking (doc vector, boosted by best chunk)
-    sims: dict[str, float] = {}
-    if mode in ("hybrid", "vector"):
-        qvec = get_embedder().embed([query])[0]
+    from .db import get_memory_store
+    store = get_memory_store(db)
+    memories = store.search(workspace_id, query, limit=limit * 3)
+    
+    if types:
+        memories = [m for m in memories if m.type in types]
+    if tags:
+        tagset = {t.lower() for t in tags}
+        memories = [m for m in memories if tagset & {t.lower() for t in m.tags}]
+    if entities:
+        entset = {e.lower() for e in entities}
+        memories = [m for m in memories if entset & {l.entity.name.lower() for l in m.entity_links}]
+        
+    f = _parse_iso(date_from) if date_from else None
+    t = _parse_iso(date_to) if date_to else None
+    if f or t:
+        keep = []
         for m in memories:
-            best = cosine(qvec, m.embedding)
-            for c in m.chunks:
-                best = max(best, cosine(qvec, c.embedding))
-            sims[m.id] = best
-
-    kw = bm25_scores(query, memories) if mode in ("hybrid", "keyword") else {}
-
-    vec_rank = {mid: r for r, (mid, _) in enumerate(
-        sorted(sims.items(), key=lambda kv: kv[1], reverse=True), start=1)}
-    kw_rank = {mid: r for r, (mid, _) in enumerate(
-        sorted(kw.items(), key=lambda kv: kv[1], reverse=True), start=1)}
-
-    rrf: dict[str, float] = {}
-    for m in memories:
-        s = 0.0
-        if m.id in vec_rank:
-            s += 1.0 / (RRF_K + vec_rank[m.id])
-        if m.id in kw_rank:
-            s += 1.0 / (RRF_K + kw_rank[m.id])
-        rrf[m.id] = s
-
-    max_rrf = max(rrf.values(), default=1.0) or 1.0
-    degrees = _relationship_degrees(db, workspace_id)
-
-    hits: list[SearchHit] = []
-    for m in memories:
-        if rrf[m.id] <= 0:
-            continue
-        comp = {
-            "similarity": round(sims.get(m.id, 0.0), 4),
-            "bm25": round(kw.get(m.id, 0.0), 4),
-            "rrf": round(rrf[m.id] / max_rrf, 4),
-            "importance": m.importance,
-            "recency": round(recency_score(m.created_at), 4),
-            "frequency": round(frequency_score(m.access_count), 4),
-            "relationship": round(degrees.get(m.id, 0.0), 4),
-            "confidence": m.confidence,
-        }
-        final = (
-            settings.w_similarity * comp["rrf"]
-            + settings.w_importance * comp["importance"]
-            + settings.w_recency * comp["recency"]
-            + settings.w_frequency * comp["frequency"]
-            + settings.w_relationship * comp["relationship"]
-            + settings.w_confidence * comp["confidence"]
-        )
-        hits.append(SearchHit(memory=m, similarity=comp["similarity"],
-                              bm25=comp["bm25"], rrf=comp["rrf"],
-                              final=round(final, 5), components=comp))
-
-    hits.sort(key=lambda h: h.final, reverse=True)
-    top = hits[:limit]
-
-    # retrieval feedback loop: touching a memory raises its frequency signal
+            created = _parse_iso(m.created_at)
+            if created is None:
+                continue
+            if f and created < f:
+                continue
+            if t and created > t:
+                continue
+            keep.append(m)
+        memories = keep
+        
+    memories = memories[:limit]
     now = datetime.now(timezone.utc).isoformat()
-    for h in top:
-        h.memory.access_count += 1
-        h.memory.last_accessed_at = now
-    return top
+    hits: list[SearchHit] = []
+    
+    for i, m in enumerate(memories):
+        m.access_count += 1
+        m.last_accessed_at = now
+        metadata = {
+            "title": m.title, "type": m.type, "summary": m.summary, 
+            "source": m.source, "author": m.author, "importance": m.importance,
+            "keywords": m.keywords, "tags": m.tags, "access_count": m.access_count,
+            "archived": m.archived, "updated_at": m.updated_at
+        }
+        store.update(m.workspace_id, m.id, m.content, metadata)
+        
+        score = max(0.1, 1.0 - (i * 0.05))
+        hits.append(SearchHit(memory=m, final=score, components={"supermemory_score": score}))
+        
+    return hits

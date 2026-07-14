@@ -20,6 +20,13 @@ class Settings:
         "ENGRAM_DATABASE_URL", f"sqlite:///{DATA_DIR / 'engram.db'}"
     )
 
+    # Supermemory Local ----------------------------------------------------
+    supermemory_url: str = os.environ.get("SUPERMEMORY_URL", "http://localhost:6767")
+    supermemory_api_key: str = os.environ.get("SUPERMEMORY_API_KEY", "")
+    supermemory_container: str = os.environ.get("SUPERMEMORY_CONTAINER", "default-container")
+    supermemory_timeout: int = int(os.environ.get("SUPERMEMORY_TIMEOUT", "10"))
+
+
     # AI layer -------------------------------------------------------------
     # embedding: local | openai | gemini | ollama
     embedding_provider: str = os.environ.get("ENGRAM_EMBEDDING_PROVIDER", "local")

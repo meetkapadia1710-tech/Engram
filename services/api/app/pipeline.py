@@ -273,21 +273,22 @@ def ingest_memory(
     memory.keywords = keywords
     memory.tags = tags or []
     memory.embedding = doc_vec
-    db.add(memory)
-    db.flush()
+    
+    metadata = {
+        "title": title,
+        "type": type_,
+        "summary": summary,
+        "source": source,
+        "author": author,
+        "importance": memory.importance,
+        "keywords": keywords,
+        "tags": tags or [],
+        "entities": extract_entities(content)
+    }
+    from .db import get_memory_store
+    store = get_memory_store(db)
+    store.save(workspace_id, memory.id, content, metadata)
 
-    for i, (chunk, vec) in enumerate(zip(chunks, chunk_vecs)):
-        mc = MemoryChunk(memory_id=memory.id, position=i, content=chunk)
-        mc.embedding = vec
-        db.add(mc)
-
-    for name, kind in extract_entities(content):
-        ent = _get_or_create_entity(db, workspace_id, name, kind)
-        db.add(MemoryEntity(memory_id=memory.id, entity_id=ent.id))
-    db.flush()
-
-    detect_relationships(db, memory)
-    db.flush()
     return memory
 
 

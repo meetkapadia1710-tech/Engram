@@ -9,9 +9,10 @@ from sqlalchemy import desc, select
 
 from ..events import emit
 from ..graph import find_related
-from ..models import Memory, Workspace
 from ..pipeline import compress_workspace, ingest_memory
 from ..schemas import MEMORY_TYPES, MemoryCreate, MemoryOut, MemoryUpdate
+from ..security import Guard, audit, guard
+from ..db import get_memory_store
 from ..security import Guard, audit, guard
 
 router = APIRouter(prefix="/v1", tags=["memories"])
@@ -58,11 +59,9 @@ def create_memory(workspace_id: str, body: MemoryCreate, g: Guard = Depends(guar
     audit(g.db, actor=g.actor, action="memory.create", workspace_id=workspace_id, detail=mem.id)
     emit(g.db, "MemoryCreated", {"memory_id": mem.id, "type": mem.type, "title": mem.title},
          workspace_id=workspace_id)
-    emit(g.db, "EmbeddingGenerated", {"memory_id": mem.id, "chunks": len(mem.chunks)},
-         workspace_id=workspace_id)
-    emit(g.db, "GraphUpdated", {"memory_id": mem.id}, workspace_id=workspace_id)
     g.db.commit()
     return memory_out(mem)
+
 
 
 @router.get("/workspaces/{workspace_id}/memories")
@@ -75,52 +74,48 @@ def list_memories(
     include_archived: bool = False,
 ):
     _get_workspace(g, workspace_id)
-    q = select(Memory).where(Memory.workspace_id == workspace_id)
+    store = get_memory_store()
+    memories = store.list(workspace_id, limit=limit, offset=offset)
     if not include_archived:
-        q = q.where(Memory.archived == 0)
+        memories = [m for m in memories if m.archived == 0]
     if type:
-        q = q.where(Memory.type == type)
-    q = q.order_by(desc(Memory.created_at)).limit(limit).offset(offset)
-    items = [memory_out(m) for m in g.db.execute(q).scalars()]
+        memories = [m for m in memories if m.type == type]
+    items = [memory_out(m) for m in memories[:limit]]
     return {"items": items, "limit": limit, "offset": offset}
 
 
 @router.get("/memories/{memory_id}", response_model=MemoryOut)
 def get_memory(memory_id: str, g: Guard = Depends(guard)):
-    m = g.db.get(Memory, memory_id)
+    store = get_memory_store()
+    # To get a memory we might need the workspace_id, but the endpoint doesn't have it.
+    # Supermemory requires customId or we just search. Wait, Supermemory get is by ID.
+    m = store.get(None, memory_id)
     if m is None:
         raise HTTPException(status_code=404, detail="memory not found")
     m.access_count += 1
     m.last_accessed_at = datetime.now(timezone.utc).isoformat()
-    g.db.commit()
+    store.update(m.workspace_id, m.id, m.content, {
+        "title": m.title, "type": m.type, "summary": m.summary, 
+        "source": m.source, "author": m.author, "importance": m.importance,
+        "keywords": m.keywords, "tags": m.tags, "access_count": m.access_count
+    })
     return memory_out(m)
 
 
 @router.patch("/memories/{memory_id}", response_model=MemoryOut)
 def update_memory(memory_id: str, body: MemoryUpdate, g: Guard = Depends(guard)):
-    m = g.db.get(Memory, memory_id)
+    store = get_memory_store()
+    m = store.get(None, memory_id)
     if m is None:
         raise HTTPException(status_code=404, detail="memory not found")
     if body.title is not None:
         m.title = body.title
     if body.content is not None:
-        from ..pipeline import chunk_text, clean_text, extract_keywords
-        from ..ai import get_embedder
-        from ..models import MemoryChunk
-
+        from ..pipeline import clean_text, extract_keywords
         m.content = clean_text(body.content)
         if not m.content:
             raise HTTPException(status_code=422, detail="content is empty")
         m.keywords = extract_keywords(m.content)
-        chunks = chunk_text(m.content)
-        vectors = get_embedder().embed(chunks + [m.content[:2000]])
-        m.embedding = vectors[-1]
-        for old in list(m.chunks):
-            g.db.delete(old)
-        for i, (chunk, vec) in enumerate(zip(chunks, vectors[:-1])):
-            mc = MemoryChunk(memory_id=m.id, position=i, content=chunk)
-            mc.embedding = vec
-            g.db.add(mc)
     if body.tags is not None:
         m.tags = body.tags
     if body.importance is not None:
@@ -128,6 +123,15 @@ def update_memory(memory_id: str, body: MemoryUpdate, g: Guard = Depends(guard))
     if body.archived is not None:
         m.archived = 1 if body.archived else 0
     m.updated_at = datetime.now(timezone.utc).isoformat()
+    
+    metadata = {
+        "title": m.title, "type": m.type, "summary": m.summary, 
+        "source": m.source, "author": m.author, "importance": m.importance,
+        "keywords": m.keywords, "tags": m.tags, "access_count": m.access_count,
+        "archived": m.archived, "updated_at": m.updated_at
+    }
+    store.update(m.workspace_id, m.id, m.content, metadata)
+    
     audit(g.db, actor=g.actor, action="memory.update", workspace_id=m.workspace_id, detail=m.id)
     emit(g.db, "MemoryUpdated", {"memory_id": m.id}, workspace_id=m.workspace_id)
     g.db.commit()
@@ -136,12 +140,13 @@ def update_memory(memory_id: str, body: MemoryUpdate, g: Guard = Depends(guard))
 
 @router.delete("/memories/{memory_id}", status_code=204)
 def delete_memory(memory_id: str, g: Guard = Depends(guard)):
-    m = g.db.get(Memory, memory_id)
+    store = get_memory_store()
+    m = store.get(None, memory_id)
     if m is None:
         raise HTTPException(status_code=404, detail="memory not found")
     audit(g.db, actor=g.actor, action="memory.delete", workspace_id=m.workspace_id, detail=m.id)
     emit(g.db, "MemoryDeleted", {"memory_id": m.id}, workspace_id=m.workspace_id)
-    g.db.delete(m)
+    store.delete(m.workspace_id, m.id)
     g.db.commit()
 
 
