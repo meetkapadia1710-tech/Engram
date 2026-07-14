@@ -16,7 +16,7 @@ Engram is a universal, self-hostable memory platform for AI agents and LLM appli
 Engram is an intelligent application layer built on top of **[Supermemory Local](https://supermemory.ai)**. Supermemory handles the heavy lifting of vector storage and semantic retrieval; Engram provides the higher-level platform: workspaces, knowledge graphs, multi-agent orchestration, workflow automation, RAG context assembly, and a full web dashboard.
 
 ```
-  Claude / Codex / Cursor / Your Agent
+  Your Agent / Application
                │
                ▼
     ┌─────────────────────┐

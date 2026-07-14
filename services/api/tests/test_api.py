@@ -11,7 +11,19 @@ def _add(client, ws, content, **kw):
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    data = r.json()
+    assert data["status"] == "ok"
+    assert data["dependencies"]["supermemory"]["reachable"] is True
+
+
+def test_health_reports_degraded_when_supermemory_unreachable(client, mock_supermemory, monkeypatch):
+    monkeypatch.setattr(mock_supermemory, "ping", lambda timeout=2.0: (False, "connection refused"))
+    r = client.get("/health")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["status"] == "degraded"
+    assert data["dependencies"]["supermemory"]["reachable"] is False
+    assert data["dependencies"]["supermemory"]["error"] == "connection refused"
 
 
 def test_openapi_served(client):
@@ -44,6 +56,21 @@ def test_memory_lifecycle(client, workspace_id):
 
     assert client.delete(f"/v1/memories/{mem['id']}").status_code == 204
     assert client.get(f"/v1/memories/{mem['id']}").status_code == 404
+
+
+def test_update_content_reextracts_entities(client, workspace_id):
+    mem = _add(client, workspace_id, "Docker layers are cached by instruction order.")
+    assert any(e["name"] == "docker" for e in mem["entities"])
+
+    upd = client.patch(
+        f"/v1/memories/{mem['id']}",
+        json={"content": "Ada Lovelace enjoys hiking and gardening on weekends."},
+    ).json()
+    assert not any(e["name"] == "docker" for e in upd["entities"])
+    assert any(e["name"] == "Ada Lovelace" for e in upd["entities"])
+
+    upd_empty = client.patch(f"/v1/memories/{mem['id']}", json={"content": "   "})
+    assert upd_empty.status_code == 422
 
 
 def test_create_validations(client, workspace_id):

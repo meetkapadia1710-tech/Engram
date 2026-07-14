@@ -141,4 +141,20 @@ class SupermemoryClient:
         except httpx.HTTPError as e:
             self._handle_error(e)
 
+    def ping(self, timeout: float = 2.0) -> tuple[bool, str]:
+        """Best-effort reachability check for /health. Never raises — a
+        down Supermemory must not take the whole API down with it, and a
+        health check that blocks for the full request timeout defeats the
+        point of a health check."""
+        try:
+            resp = self.client.get("/health", timeout=timeout)
+            resp.raise_for_status()
+            return True, ""
+        except httpx.HTTPError as e:
+            logger.warning(f"Supermemory unreachable: {e}")
+            return False, str(e)
+        except Exception as e:  # noqa: BLE001 - health checks must never crash the endpoint
+            logger.warning(f"Supermemory ping failed: {e}")
+            return False, str(e)
+
 supermemory = SupermemoryClient()

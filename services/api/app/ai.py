@@ -192,7 +192,7 @@ class AnthropicGenerator:
                 "anthropic-version": "2023-06-01",
             },
             json={
-                "model": settings.generation_model or "claude-haiku-4-5-20251001",
+                "model": settings.generation_model or "anthropic-default-model",
                 "max_tokens": 300,
                 "messages": [{"role": "user", "content": prompt}],
             },

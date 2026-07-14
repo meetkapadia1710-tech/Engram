@@ -231,6 +231,8 @@ def check_and_count_api_call(db: Session, workspace_id: str) -> None:
     if row.api_calls >= DEFAULT_QUOTAS["api_calls_per_day"]:
         raise KernelError(429, "daily API quota exceeded")
     row.api_calls += 1
+    db.flush()  # the session doesn't autoflush; a later call in the same
+    # transaction re-queries by (workspace_id, day) and must see this count
 
 
 def storage_usage(db: Session, workspace_id: str) -> dict:

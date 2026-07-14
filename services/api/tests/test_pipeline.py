@@ -1,7 +1,10 @@
 """Unit tests: chunking, cleaning, embedding, extraction, relationships."""
 
+from sqlalchemy import select
+
 from app.ai import LocalEmbedder, cosine
 from app.pipeline import (
+    apply_content_update,
     chunk_text,
     clean_text,
     extract_entities,
@@ -90,11 +93,93 @@ def test_ingest_creates_chunks_entities_relationships(session):
     session.commit()
 
     assert m1.embedding and m1.keywords
-    
+    assert any(l.entity.name == "docker" for l in m1.entity_links)
+
+    # Entity identity is per-workspace, not per-memory: the "docker" mention
+    # in m1 and m2 must resolve to the same graph node.
+    from app.models import Entity
+
+    docker_entities = session.execute(
+        select(Entity).where(Entity.workspace_id == ws.id, Entity.name == "docker")
+    ).scalars().all()
+    assert len(docker_entities) == 1
+    assert docker_entities[0].mention_count == 2
+
+    from app.models import Relationship
+
+    rels = session.execute(select(Relationship)).scalars().all()
+    assert any({r.source_id, r.target_id} == {m1.id, m2.id} for r in rels)
+
+    # The store round-trip (Supermemory) still carries the same entities.
     from app.db import get_memory_store
     store = get_memory_store(session)
     stored_m1 = store.get(ws.id, m1.id)
     assert any(l.entity.name == "docker" for l in stored_m1.entity_links)
+
+
+def test_content_update_reextracts_entities_and_relationships(session):
+    from app.models import Entity, Relationship
+
+    ws = Workspace(name="w3", slug="w3")
+    session.add(ws)
+    session.flush()
+
+    m1 = ingest_memory(
+        session, workspace_id=ws.id,
+        content="Learned that Docker images are built from cached layers.",
+        type_="note",
+    )
+    m2 = ingest_memory(
+        session, workspace_id=ws.id,
+        content="Docker layer caching makes image builds much faster.",
+        type_="note",
+    )
+    session.flush()
+
+    # Sanity: before the edit, m1 is linked to "docker" and related to m2.
+    assert any(l.entity.name == "docker" for l in m1.entity_links)
+    assert any(
+        {r.source_id, r.target_id} == {m1.id, m2.id}
+        for r in session.execute(select(Relationship)).scalars().all()
+    )
+    docker_before = session.execute(
+        select(Entity).where(Entity.workspace_id == ws.id, Entity.name == "docker")
+    ).scalar_one()
+    assert docker_before.mention_count == 2
+
+    # Edit m1 so it no longer mentions Docker at all, but mentions someone new.
+    apply_content_update(
+        session, m1,
+        "Ada Lovelace enjoys hiking and gardening on weekends.",
+    )
+    session.flush()
+
+    assert not any(l.entity.name == "docker" for l in m1.entity_links)
+    assert any(l.entity.name == "Ada Lovelace" for l in m1.entity_links)
+
+    # docker's mention_count reflects only m2 now.
+    docker_after = session.execute(
+        select(Entity).where(Entity.workspace_id == ws.id, Entity.name == "docker")
+    ).scalar_one()
+    assert docker_after.mention_count == 1
+
+    # The stale relationship between m1 and m2 is gone (recomputed, and
+    # these two memories no longer have anything in common).
+    rels = session.execute(select(Relationship)).scalars().all()
+    assert not any({r.source_id, r.target_id} == {m1.id, m2.id} for r in rels)
+
+
+def test_content_update_rejects_empty_content(session):
+    ws = Workspace(name="w4", slug="w4")
+    session.add(ws)
+    session.flush()
+    m = ingest_memory(session, workspace_id=ws.id, content="Some initial content here.")
+    session.flush()
+
+    import pytest
+
+    with pytest.raises(ValueError):
+        apply_content_update(session, m, "   \n\n  ")
 
 
 def test_ingest_rejects_empty_content(session):

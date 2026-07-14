@@ -112,6 +112,9 @@ def execute(
     finally:
         rec.duration_ms = round((time.perf_counter() - start) * 1000, 2)
         observability.observe_ms(f"tools.{name}", rec.duration_ms)
+        # session doesn't autoflush; a caller auditing tool_executions in the
+        # same transaction must see this row immediately
+        db.flush()
 
 
 def list_tools() -> list[dict]:

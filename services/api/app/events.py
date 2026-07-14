@@ -55,7 +55,8 @@ def _deliver(db: Session, event: EventRecord, name: str, fn) -> None:
             fn(db, event)
             delivery.status = "ok"
             delivery.updated_at = _now_iso()
-            return
+            db.flush()  # session doesn't autoflush; dead_letters()/replay()
+            return       # in the same transaction must see this immediately
         except Exception as exc:  # noqa: BLE001 — subscriber isolation is the point
             delivery.status = "retrying"
             delivery.last_error = f"{type(exc).__name__}: {exc}"[:500]
@@ -63,6 +64,7 @@ def _deliver(db: Session, event: EventRecord, name: str, fn) -> None:
                         name, event.type, attempt, exc)
     delivery.status = "dead"
     delivery.updated_at = _now_iso()
+    db.flush()
 
 
 def emit(

@@ -180,12 +180,40 @@ def hybrid_search(
     date_to: str | None = None,
     mode: str = "hybrid",  # hybrid | vector | keyword
 ) -> list[SearchHit]:
+    """Ask Supermemory for semantic candidates, then re-rank using Engram's
+    local index (entity graph, relationships, access/recency signals).
+
+    Supermemory stays the semantic-search + durable-content source; the local
+    mirror (populated by pipeline.ingest_memory) is the ranking/graph source
+    of truth. This never writes back to Supermemory — access-count
+    bookkeeping is persisted to the local mirror only. Writing on every read
+    used to clobber remote metadata (a partial dict wipes fields it omits)
+    and cost an HTTP round trip per candidate.
+    """
     from .db import get_memory_store
     store = get_memory_store(db)
-    
+
     # Ask Supermemory for more candidates than needed so we can re-rank them
-    memories = store.search(workspace_id, query, limit=limit * 3)
-    
+    candidates = store.search(workspace_id, query, limit=limit * 3)
+
+    now = datetime.now(timezone.utc).isoformat()
+    memories: list[Memory] = []
+    for cand in candidates:
+        local = db.get(Memory, cand.id)
+        if local is not None:
+            # Local row is authoritative for ranking + display (real entity
+            # links, true created_at, tracked access_count); only the
+            # similarity score is borrowed from Supermemory's own ranking.
+            local._similarity = getattr(cand, "_similarity", 0.5)
+            local.access_count += 1
+            local.last_accessed_at = now
+            memories.append(local)
+        else:
+            # No local mirror (e.g. content written outside Engram's
+            # pipeline) — fall back to the reconstructed object as-is.
+            # Nothing is written anywhere for this branch.
+            memories.append(cand)
+
     if types:
         memories = [m for m in memories if m.type in types]
     if tags:
@@ -194,7 +222,7 @@ def hybrid_search(
     if entities:
         entset = {e.lower() for e in entities}
         memories = [m for m in memories if entset & {l.entity.name.lower() for l in m.entity_links}]
-        
+
     f = _parse_iso(date_from) if date_from else None
     t = _parse_iso(date_to) if date_to else None
     if f or t:
@@ -215,52 +243,39 @@ def hybrid_search(
         degrees = _relationship_degrees(db, workspace_id)
     except Exception:
         degrees = {}
-        
-    now = datetime.now(timezone.utc).isoformat()
+
     hits: list[SearchHit] = []
-    
+
     # Re-ranking weights from config (configurable via ENV)
     w_sim = settings.w_similarity
     w_imp = settings.w_importance
     w_rec = settings.w_recency
     w_freq = settings.w_frequency
     w_rel = settings.w_relationship
-    
+
     for m in memories:
-        # Increment access count immediately to influence future frequency scores
-        m.access_count += 1
-        m.last_accessed_at = now
-        metadata = {
-            "title": m.title, "type": m.type, "summary": m.summary, 
-            "source": m.source, "author": m.author, "importance": m.importance,
-            "keywords": m.keywords, "tags": m.tags, "access_count": m.access_count,
-            "archived": m.archived, "updated_at": m.updated_at
-        }
-        # Fire-and-forget update to store
-        store.update(m.workspace_id, m.id, m.content, metadata)
-        
         # 1. Base semantic similarity from Supermemory
         sim = getattr(m, "_similarity", 0.5)
-        
+
         # 2. Base importance (length, type, keywords)
         imp = m.importance or 0.5
-        
+
         # 3. Recency decay (exponential decay based on half-life)
         rec = recency_score(m.created_at)
-        
+
         # 4. Access frequency (log scaled)
         freq = frequency_score(m.access_count)
-        
+
         # 5. Graph centrality (how many other memories it connects to)
         rel = degrees.get(m.id, 0.0)
-        
+
         # Blend the scores
         final = (w_sim * sim) + (w_imp * imp) + (w_rec * rec) + (w_freq * freq) + (w_rel * rel)
-        
+
         hits.append(SearchHit(
-            memory=m, 
-            similarity=sim, 
-            final=final, 
+            memory=m,
+            similarity=sim,
+            final=final,
             components={
                 "similarity": round(sim, 3),
                 "importance": round(imp, 3),
@@ -269,7 +284,7 @@ def hybrid_search(
                 "relationship": round(rel, 3),
             }
         ))
-        
+
     # Sort descending by the blended cognitive score
     hits.sort(key=lambda h: h.final, reverse=True)
     return hits[:limit]

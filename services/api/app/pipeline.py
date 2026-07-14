@@ -64,8 +64,9 @@ def chunk_text(text: str, max_chars: int = 900, overlap: int = 120) -> list[str]
 TECH_LEXICON = {
     "docker", "kubernetes", "terraform", "postgres", "postgresql", "redis",
     "neo4j", "python", "typescript", "javascript", "react", "nextjs", "fastapi",
+    "ai", "ml", "api", "ui", "ux", "db", "sql", "json", "xml", "html", "css",
     "nestjs", "tailwind", "sqlite", "pgvector", "ollama", "openai", "anthropic",
-    "claude", "gemini", "gpt", "llm", "rag", "embedding", "embeddings", "vector",
+    "llm", "rag", "embedding", "embeddings", "vector",
     "graphql", "rest", "websocket", "oauth", "jwt", "github", "linux", "windows",
     "macos", "aws", "azure", "gcp", "vercel", "node", "rust", "golang", "java",
     "sql", "nosql", "grafana", "prometheus", "sentry", "opentelemetry", "bm25",
@@ -225,6 +226,72 @@ def detect_relationships(
     return created
 
 
+def resync_entities_and_relationships(db: Session, memory: Memory) -> None:
+    """Recompute entity links and relationships from ``memory.content`` /
+    ``memory.embedding`` — call after both already hold the current text.
+
+    Drops this memory's existing entity links and relationships first (so an
+    edit can't leave it linked to entities/edges computed from text that's no
+    longer there), decrementing each dropped entity's mention_count, then
+    re-extracts and re-detects from scratch.
+
+    Uses ``memory.entity_links.append/.remove`` (not raw ``db.add``) so the
+    in-memory relationship collection stays consistent with the database
+    without depending on a fresh lazy-load — needed on the update path, where
+    the collection may already be loaded before this runs.
+
+    Note: this only recomputes *this* memory's own relationship edges
+    (source_id == memory.id and edges pointing at it are dropped, but other
+    memories' own outward edges into this one are left stale until they are
+    themselves re-ingested or edited). Recomputing the whole graph on every
+    edit would be a much more expensive, unbounded operation and isn't what
+    this fixes.
+    """
+    stale_rels = db.execute(
+        select(Relationship).where(
+            (Relationship.source_id == memory.id) | (Relationship.target_id == memory.id)
+        )
+    ).scalars().all()
+    for rel in stale_rels:
+        db.delete(rel)
+
+    for link in list(memory.entity_links):
+        link.entity.mention_count = max(0, link.entity.mention_count - 1)
+        memory.entity_links.remove(link)
+    db.flush()
+
+    for name, kind in extract_entities(memory.content):
+        ent = _get_or_create_entity(db, memory.workspace_id, name, kind)
+        memory.entity_links.append(MemoryEntity(entity=ent))
+    db.flush()
+
+    detect_relationships(db, memory)
+    db.flush()
+
+
+def apply_content_update(db: Session, memory: Memory, new_content: str) -> None:
+    """Update a memory's content and recompute everything derived from it:
+    keywords, embedding, entity links, and relationships.
+
+    Raises ValueError if the cleaned content is empty. Without this, editing
+    a memory's content left keywords/embedding/entities/relationships frozen
+    from the OLD text forever — search, the graph, and re-ranking would all
+    silently drift from what the memory now actually says.
+    """
+    content = clean_text(new_content)
+    if not content:
+        raise ValueError("content is empty after cleaning")
+
+    memory.content = content
+    memory.keywords = extract_keywords(content)
+
+    chunks = chunk_text(content)
+    vectors = get_embedder().embed(chunks + [content[:2000]])
+    memory.embedding = vectors[-1]
+
+    resync_entities_and_relationships(db, memory)
+
+
 def ingest_memory(
     db: Session,
     *,
@@ -236,7 +303,13 @@ def ingest_memory(
     author: str = "",
     tags: list[str] | None = None,
 ) -> Memory:
-    """Run the full pipeline and persist one memory. Commits are the caller's job."""
+    """Run the full pipeline and persist one memory.
+
+    Written to two places: Supermemory Local (durable, semantically-searchable
+    content) and Engram's local SQLite mirror (the source of truth for the
+    knowledge graph and ranking signals — entity identity across memories,
+    relationships, access/recency/importance). Commits are the caller's job.
+    """
     content = clean_text(content)
     if not content:
         raise ValueError("content is empty after cleaning")
@@ -244,7 +317,7 @@ def ingest_memory(
     chunks = chunk_text(content)
     embedder = get_embedder()
     vectors = embedder.embed(chunks + [content[:2000]])
-    chunk_vecs, doc_vec = vectors[:-1], vectors[-1]
+    _chunk_vecs, doc_vec = vectors[:-1], vectors[-1]
 
     keywords = extract_keywords(content)
     if not title:
@@ -260,9 +333,8 @@ def ingest_memory(
         except Exception:
             summary = content[:280]
 
-    import uuid
+    now = datetime.now(timezone.utc).isoformat()
     memory = Memory(
-        id=uuid.uuid4().hex,
         workspace_id=workspace_id,
         type=type_,
         title=title,
@@ -272,44 +344,24 @@ def ingest_memory(
         author=author,
         importance=score_importance(content, type_),
         confidence=0.8,
-        access_count=0,
-        archived=0,
-        created_at=datetime.now(timezone.utc).isoformat(),
-        updated_at=datetime.now(timezone.utc).isoformat(),
+        created_at=now,
+        updated_at=now,
     )
     memory.keywords = keywords
     memory.tags = tags or []
     memory.embedding = doc_vec
-    
-    entities_data = extract_entities(content)
-    
-    if entities_data:
-        from .models import Entity, MemoryEntity
-        links = []
-        import uuid
-        for n, k in entities_data:
-            e = Entity(id=uuid.uuid4().hex, name=n, kind=k)
-            links.append(MemoryEntity(entity=e))
-        memory.entity_links = links
-        
-    metadata = {
-        "title": title,
-        "type": type_,
-        "summary": summary,
-        "source": source,
-        "author": author,
-        "importance": memory.importance,
-        "keywords": keywords,
-        "tags": tags or [],
-        "entities": entities_data,
-        "created_at": memory.created_at,
-        "updated_at": memory.updated_at,
-        "access_count": memory.access_count,
-        "confidence": memory.confidence,
-    }
-    from .db import get_memory_store
+    db.add(memory)
+    db.flush()  # assigns memory.id; makes the row visible to queries below
+
+    # Entities are resolved (not recreated) per workspace so the same
+    # concept — "docker" mentioned in ten memories — is one graph node,
+    # not ten disconnected ones.
+    resync_entities_and_relationships(db, memory)
+
+    from .db import build_full_metadata, get_memory_store
+
     store = get_memory_store(db)
-    store.save(workspace_id, memory.id, content, metadata)
+    store.save(workspace_id, memory.id, content, build_full_metadata(memory))
 
     return memory
 

@@ -196,3 +196,31 @@ class SQLiteStore(MemoryStore):
 def get_memory_store(db: Optional[Session] = None) -> MemoryStore:
     return SupermemoryStore()
 
+
+def build_full_metadata(m: Any) -> Dict[str, Any]:
+    """Serialize every field a local Memory row carries into a Supermemory
+    metadata dict.
+
+    Every write to the store must go through this (never a hand-rolled
+    subset) — Supermemory's PATCH replaces the metadata object wholesale, so
+    a partial dict silently deletes whatever fields it omits (this previously
+    wiped `entities` and `created_at` on every search/read that happened to
+    touch a memory).
+    """
+    return {
+        "title": m.title,
+        "type": m.type,
+        "summary": m.summary,
+        "source": m.source,
+        "author": m.author,
+        "importance": m.importance,
+        "confidence": m.confidence,
+        "keywords": m.keywords,
+        "tags": m.tags,
+        "entities": [(l.entity.name, l.entity.kind) for l in m.entity_links],
+        "created_at": m.created_at,
+        "updated_at": m.updated_at,
+        "access_count": m.access_count,
+        "archived": m.archived,
+    }
+

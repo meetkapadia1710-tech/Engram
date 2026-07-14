@@ -108,11 +108,33 @@ async def unhandled(request: Request, exc: Exception):
 
 @app.get("/health", tags=["system"])
 def health():
+    """Liveness + dependency reachability.
+
+    ``status`` reflects the FastAPI process itself (always "ok" if this
+    handler runs); Supermemory Local is a hard runtime dependency for every
+    memory endpoint, so its reachability is surfaced under `dependencies`
+    rather than silently assumed — a memory-layer product whose health
+    check can't see its own memory layer is worse than no health check.
+    """
+    from .supermemory_client import supermemory
+
+    start = time.perf_counter()
+    reachable, error = supermemory.ping()
+    latency_ms = round((time.perf_counter() - start) * 1000, 1)
+
     return {
-        "status": "ok",
+        "status": "ok" if reachable else "degraded",
         "version": __version__,
         "embedding_provider": settings.embedding_provider,
         "generation_provider": settings.generation_provider,
+        "dependencies": {
+            "supermemory": {
+                "reachable": reachable,
+                "url": settings.supermemory_url,
+                "latency_ms": latency_ms,
+                "error": error or None,
+            },
+        },
     }
 
 

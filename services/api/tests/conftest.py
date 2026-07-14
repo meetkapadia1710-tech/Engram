@@ -25,7 +25,7 @@ def session():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    from app import models  # noqa: F401
+    from app import models, models_platform  # noqa: F401
 
     Base.metadata.create_all(engine)
     TestSession = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
@@ -36,12 +36,18 @@ def session():
 
 @pytest.fixture()
 def client(session, mock_supermemory):
+    from app.catalog import seed_catalog
     from app.main import app
 
     def _override():
         yield session
 
     app.dependency_overrides[get_db] = _override
+    # The app's own startup hook seeds the catalog via an un-overridden
+    # get_db() (it isn't a route dependency, so overrides don't reach it) —
+    # seed the test's own in-memory session directly instead.
+    seed_catalog(session)
+    session.commit()
     with TestClient(app, raise_server_exceptions=False) as c:
         yield c
     app.dependency_overrides.clear()
@@ -119,6 +125,9 @@ class MockSupermemoryClient:
 
     def profile(self) -> dict:
         return {}
+
+    def ping(self, timeout: float = 2.0) -> tuple[bool, str]:
+        return True, ""
 
 
 @pytest.fixture(autouse=True)

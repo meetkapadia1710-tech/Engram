@@ -7,10 +7,9 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import desc, select
+from sqlalchemy import desc, func, select
 
-from ..db import get_memory_store
-from ..models import AuditLog, Workspace
+from ..models import AuditLog, Entity, Memory, Relationship, Workspace
 from ..schemas import WorkspaceCreate, WorkspaceOut
 from ..security import Guard, audit, guard
 
@@ -39,15 +38,13 @@ def create_workspace(body: WorkspaceCreate, g: Guard = Depends(guard)):
 
 @router.get("/workspaces")
 def list_workspaces(g: Guard = Depends(guard)):
-    store = get_memory_store()
     out = []
     for ws in g.db.execute(select(Workspace)).scalars():
-        # Count active (non-archived) memories via the memory store
-        try:
-            memories = store.list(ws.id, limit=10000, offset=0)
-            count = sum(1 for m in memories if not m.archived)
-        except Exception:
-            count = 0
+        count = g.db.execute(
+            select(func.count(Memory.id)).where(
+                Memory.workspace_id == ws.id, Memory.archived == 0
+            )
+        ).scalar_one()
         out.append(WorkspaceOut(
             id=ws.id, name=ws.name, slug=ws.slug,
             created_at=ws.created_at, memory_count=count,
@@ -70,13 +67,15 @@ def analytics(workspace_id: str, g: Guard = Depends(guard)):
     if g.db.get(Workspace, workspace_id) is None:
         raise HTTPException(status_code=404, detail="workspace not found")
 
-    from ..db import get_memory_store
-    store = get_memory_store(g.db)
-    memories = store.list(workspace_id, limit=10000, offset=0)
-    
-    # We don't have entities and rels in SQLite anymore, just mock for analytics
-    entity_count = sum(len(m.entity_links) for m in memories)
-    rel_count = 0
+    memories = g.db.execute(
+        select(Memory).where(Memory.workspace_id == workspace_id)
+    ).scalars().all()
+    entity_count = g.db.execute(
+        select(func.count(Entity.id)).where(Entity.workspace_id == workspace_id)
+    ).scalar_one()
+    rel_count = g.db.execute(
+        select(func.count(Relationship.id)).where(Relationship.workspace_id == workspace_id)
+    ).scalar_one()
 
     by_type = Counter(m.type for m in memories if not m.archived)
 
@@ -86,13 +85,15 @@ def analytics(workspace_id: str, g: Guard = Depends(guard)):
     per_day = Counter(m.created_at[:10] for m in memories)
     activity = [{"date": d, "count": per_day.get(d, 0)} for d in days]
 
-    # mock top entities
-    ents = {}
-    for m in memories:
-        for l in m.entity_links:
-            ents[l.entity.name] = ents.get(l.entity.name, 0) + 1
-    top_entities = [{"name": name, "kind": "concept", "mentions": count} 
-                    for name, count in sorted(ents.items(), key=lambda x: -x[1])[:10]]
+    top_entities = [
+        {"name": e.name, "kind": e.kind, "mentions": e.mention_count}
+        for e in g.db.execute(
+            select(Entity)
+            .where(Entity.workspace_id == workspace_id)
+            .order_by(desc(Entity.mention_count))
+            .limit(10)
+        ).scalars()
+    ]
 
     return {
         "memories": sum(1 for m in memories if not m.archived),
