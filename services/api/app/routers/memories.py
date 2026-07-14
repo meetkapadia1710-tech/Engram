@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, select
 
+from ..events import emit
 from ..graph import find_related
 from ..models import Memory, Workspace
 from ..pipeline import compress_workspace, ingest_memory
@@ -55,6 +56,11 @@ def create_memory(workspace_id: str, body: MemoryCreate, g: Guard = Depends(guar
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     audit(g.db, actor=g.actor, action="memory.create", workspace_id=workspace_id, detail=mem.id)
+    emit(g.db, "MemoryCreated", {"memory_id": mem.id, "type": mem.type, "title": mem.title},
+         workspace_id=workspace_id)
+    emit(g.db, "EmbeddingGenerated", {"memory_id": mem.id, "chunks": len(mem.chunks)},
+         workspace_id=workspace_id)
+    emit(g.db, "GraphUpdated", {"memory_id": mem.id}, workspace_id=workspace_id)
     g.db.commit()
     return memory_out(mem)
 
@@ -123,6 +129,7 @@ def update_memory(memory_id: str, body: MemoryUpdate, g: Guard = Depends(guard))
         m.archived = 1 if body.archived else 0
     m.updated_at = datetime.now(timezone.utc).isoformat()
     audit(g.db, actor=g.actor, action="memory.update", workspace_id=m.workspace_id, detail=m.id)
+    emit(g.db, "MemoryUpdated", {"memory_id": m.id}, workspace_id=m.workspace_id)
     g.db.commit()
     return memory_out(m)
 
@@ -133,6 +140,7 @@ def delete_memory(memory_id: str, g: Guard = Depends(guard)):
     if m is None:
         raise HTTPException(status_code=404, detail="memory not found")
     audit(g.db, actor=g.actor, action="memory.delete", workspace_id=m.workspace_id, detail=m.id)
+    emit(g.db, "MemoryDeleted", {"memory_id": m.id}, workspace_id=m.workspace_id)
     g.db.delete(m)
     g.db.commit()
 

@@ -12,6 +12,14 @@ import {
   Search,
   Settings,
   Waypoints,
+  Store,
+  Bot,
+  Workflow,
+  Activity,
+  UserCircle,
+  Wrench,
+  Radio,
+  Zap,
 } from "lucide-react";
 import { useWorkspace } from "@/app/providers";
 import { CommandPalette } from "./CommandPalette";
@@ -22,6 +30,16 @@ const NAV = [
   { href: "/search", label: "Search", icon: Search },
   { href: "/graph", label: "Graph", icon: Waypoints },
   { href: "/timeline", label: "Timeline", icon: Clock },
+  { section: "Platform" },
+  { href: "/marketplace", label: "Marketplace", icon: Store },
+  { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/workflows", label: "Workflows", icon: Workflow },
+  { href: "/tools", label: "Tools", icon: Wrench },
+  { href: "/events", label: "Events", icon: Radio },
+  { section: "Intelligence" },
+  { href: "/digital-twin", label: "Digital Twin", icon: UserCircle },
+  { href: "/observability", label: "Observability", icon: Activity },
+  { section: "Account" },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -44,12 +62,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative z-10 flex min-h-screen">
-      <aside className="glass sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-border px-4 py-6">
+      <aside className="glass sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border overflow-y-auto px-4 py-6">
         <Link href="/" className="mb-8 flex items-center gap-2.5 px-2">
           <span className="grid size-8 place-items-center rounded-lg bg-accent-soft">
             <Brain className="size-4.5 text-accent" />
           </span>
-          <span className="text-[15px] font-semibold tracking-tight">Engram</span>
+          <div>
+            <span className="text-[15px] font-semibold tracking-tight">Engram</span>
+            <div className="text-[10px] text-faint -mt-0.5">AI Memory OS</div>
+          </div>
         </Link>
 
         <button
@@ -59,9 +80,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <Plus className="size-4" /> New memory
         </button>
 
-        <nav className="flex flex-col gap-1">
-          {NAV.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
+        <nav className="flex flex-col gap-0.5">
+          {NAV.map((item, idx) => {
+            if ("section" in item) {
+              return (
+                <div key={idx} className="mt-4 mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-faint">
+                  {item.section}
+                </div>
+              );
+            }
+            const { href, label, icon: Icon } = item as { href: string; label: string; icon: React.ElementType };
+            const active = pathname === href || (href !== "/" && pathname.startsWith(href));
             return (
               <Link
                 key={href}
@@ -72,7 +101,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     : "text-muted hover:bg-surface-2/60 hover:text-text"
                 }`}
               >
-                <Icon className="size-4" />
+                <Icon className="size-4 shrink-0" />
                 {label}
               </Link>
             );

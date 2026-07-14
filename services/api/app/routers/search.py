@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from .. import observability
+from ..events import emit
 from ..graph import build_graph
 from ..models import Workspace
 from ..rag import build_context
@@ -23,12 +25,16 @@ def _check_ws(g: Guard, workspace_id: str) -> None:
 @router.post("/workspaces/{workspace_id}/search")
 def search(workspace_id: str, body: SearchRequest, g: Guard = Depends(guard)):
     _check_ws(g, workspace_id)
-    hits = hybrid_search(
-        g.db, workspace_id, body.query,
-        limit=body.limit, mode=body.mode, types=body.types, tags=body.tags,
-        entities=body.entities, date_from=body.date_from, date_to=body.date_to,
-    )
+    with observability.timed("search"):
+        hits = hybrid_search(
+            g.db, workspace_id, body.query,
+            limit=body.limit, mode=body.mode, types=body.types, tags=body.tags,
+            entities=body.entities, date_from=body.date_from, date_to=body.date_to,
+        )
     audit(g.db, actor=g.actor, action="search", workspace_id=workspace_id, detail=body.query[:200])
+    emit(g.db, "SearchExecuted",
+         {"query": body.query[:200], "mode": body.mode, "hits": len(hits)},
+         workspace_id=workspace_id)
     g.db.commit()
     return {
         "query": body.query,
@@ -43,11 +49,16 @@ def search(workspace_id: str, body: SearchRequest, g: Guard = Depends(guard)):
 @router.post("/workspaces/{workspace_id}/context")
 def context(workspace_id: str, body: ContextRequest, g: Guard = Depends(guard)):
     _check_ws(g, workspace_id)
-    result = build_context(
-        g.db, workspace_id, body.query,
-        max_tokens=body.max_tokens, limit=body.limit, types=body.types,
-        date_from=body.date_from, date_to=body.date_to,
-    )
+    with observability.timed("context"):
+        result = build_context(
+            g.db, workspace_id, body.query,
+            max_tokens=body.max_tokens, limit=body.limit, types=body.types,
+            date_from=body.date_from, date_to=body.date_to,
+        )
+    emit(g.db, "ContextBuilt",
+         {"query": body.query[:200], "sources": len(result["sources"]),
+          "approx_tokens": result["approx_tokens"]},
+         workspace_id=workspace_id)
     g.db.commit()
     return result
 

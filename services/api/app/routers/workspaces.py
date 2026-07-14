@@ -29,6 +29,9 @@ def create_workspace(body: WorkspaceCreate, g: Guard = Depends(guard)):
     ws = Workspace(name=body.name, slug=slug)
     g.db.add(ws)
     audit(g.db, actor=g.actor, action="workspace.create", detail=slug)
+    from ..events import emit
+
+    emit(g.db, "WorkspaceCreated", {"slug": slug}, workspace_id=ws.id)
     g.db.commit()
     return WorkspaceOut(id=ws.id, name=ws.name, slug=ws.slug, created_at=ws.created_at)
 

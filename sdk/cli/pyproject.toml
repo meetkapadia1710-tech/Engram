@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=72", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "engram-cli"
+version = "1.0.0"
+description = "Command-line interface for the Engram AI Memory OS"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.7",
+    "engram>=1.0.0",
+]
+
+[project.scripts]
+engram = "engram_cli:app"
+
+[tool.setuptools.packages.find]
+where = ["."]

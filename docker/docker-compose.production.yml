@@ -1,0 +1,169 @@
+version: "3.9"
+
+# ============================================================
+# Engram — Production Docker Compose
+# ============================================================
+# Services:
+#   api        — FastAPI (3 replicas behind nginx)
+#   postgres   — PostgreSQL 16 + pgvector
+#   redis      — Session / cache / pub-sub
+#   nginx      — Reverse proxy + SSL termination
+#   prometheus — Metrics scraping
+#   grafana    — Dashboard visualisation
+# ============================================================
+#
+# Usage:
+#   cp .env.production .env
+#   docker compose -f docker/docker-compose.production.yml up -d
+#
+# Required .env variables:
+#   ENGRAM_DATABASE_URL=postgresql://engram:secret@postgres:5432/engram
+#   ENGRAM_API_KEYS=your-secret-key-here
+#   POSTGRES_PASSWORD=secret
+#   GRAFANA_PASSWORD=admin
+# ============================================================
+
+x-api-base: &api-base
+  image: engram-api:latest
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+  environment:
+    ENGRAM_DATABASE_URL: ${ENGRAM_DATABASE_URL:-postgresql://engram:secret@postgres:5432/engram}
+    ENGRAM_API_KEYS: ${ENGRAM_API_KEYS:-}
+    ENGRAM_EMBEDDING_PROVIDER: ${ENGRAM_EMBEDDING_PROVIDER:-local}
+    ENGRAM_GENERATION_PROVIDER: ${ENGRAM_GENERATION_PROVIDER:-local}
+    ENGRAM_CORS_ORIGINS: ${ENGRAM_CORS_ORIGINS:-*}
+    OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  depends_on:
+    postgres:
+      condition: service_healthy
+  restart: unless-stopped
+  networks:
+    - engram
+
+services:
+  # ── API (3 replicas) ──────────────────────────────────────
+  api-1:
+    <<: *api-base
+    ports: []
+    command: >
+      uvicorn app.main:app
+        --host 0.0.0.0 --port 8000
+        --workers 2
+        --log-config /app/docker/log_config.json
+
+  api-2:
+    <<: *api-base
+    ports: []
+    command: >
+      uvicorn app.main:app
+        --host 0.0.0.0 --port 8000
+        --workers 2
+        --log-config /app/docker/log_config.json
+
+  api-3:
+    <<: *api-base
+    ports: []
+    command: >
+      uvicorn app.main:app
+        --host 0.0.0.0 --port 8000
+        --workers 2
+        --log-config /app/docker/log_config.json
+
+  # ── Nginx ─────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - api-1
+      - api-2
+      - api-3
+    restart: unless-stopped
+    networks:
+      - engram
+
+  # ── PostgreSQL + pgvector ─────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: engram
+      POSTGRES_USER: engram
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U engram"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - engram
+
+  # ── Redis (pub-sub / cache) ────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - engram
+
+  # ── Prometheus ────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    restart: unless-stopped
+    networks:
+      - engram
+
+  # ── Grafana ───────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - engram
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  engram:
+    driver: bridge
