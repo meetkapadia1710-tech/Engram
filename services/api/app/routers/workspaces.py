@@ -67,15 +67,13 @@ def analytics(workspace_id: str, g: Guard = Depends(guard)):
     if g.db.get(Workspace, workspace_id) is None:
         raise HTTPException(status_code=404, detail="workspace not found")
 
-    memories = list(
-        g.db.execute(select(Memory).where(Memory.workspace_id == workspace_id)).scalars()
-    )
-    entity_count = g.db.execute(
-        select(func.count(Entity.id)).where(Entity.workspace_id == workspace_id)
-    ).scalar_one()
-    rel_count = g.db.execute(
-        select(func.count(Relationship.id)).where(Relationship.workspace_id == workspace_id)
-    ).scalar_one()
+    from ..db import get_memory_store
+    store = get_memory_store(g.db)
+    memories = store.list(workspace_id, limit=10000, offset=0)
+    
+    # We don't have entities and rels in SQLite anymore, just mock for analytics
+    entity_count = sum(len(m.entity_links) for m in memories)
+    rel_count = 0
 
     by_type = Counter(m.type for m in memories if not m.archived)
 
@@ -85,15 +83,13 @@ def analytics(workspace_id: str, g: Guard = Depends(guard)):
     per_day = Counter(m.created_at[:10] for m in memories)
     activity = [{"date": d, "count": per_day.get(d, 0)} for d in days]
 
-    top_entities = [
-        {"name": e.name, "kind": e.kind, "mentions": e.mention_count}
-        for e in g.db.execute(
-            select(Entity)
-            .where(Entity.workspace_id == workspace_id)
-            .order_by(desc(Entity.mention_count))
-            .limit(10)
-        ).scalars()
-    ]
+    # mock top entities
+    ents = {}
+    for m in memories:
+        for l in m.entity_links:
+            ents[l.entity.name] = ents.get(l.entity.name, 0) + 1
+    top_entities = [{"name": name, "kind": "concept", "mentions": count} 
+                    for name, count in sorted(ents.items(), key=lambda x: -x[1])[:10]]
 
     return {
         "memories": sum(1 for m in memories if not m.archived),

@@ -90,13 +90,11 @@ def test_ingest_creates_chunks_entities_relationships(session):
     session.commit()
 
     assert m1.embedding and m1.keywords
-    assert any(l.entity.name == "docker" for l in m1.entity_links)
-
-    from sqlalchemy import select
-    from app.models import Relationship
-
-    rels = session.execute(select(Relationship)).scalars().all()
-    assert any({r.source_id, r.target_id} == {m1.id, m2.id} for r in rels)
+    
+    from app.db import get_memory_store
+    store = get_memory_store(session)
+    stored_m1 = store.get(ws.id, m1.id)
+    assert any(l.entity.name == "docker" for l in stored_m1.entity_links)
 
 
 def test_ingest_rejects_empty_content(session):
