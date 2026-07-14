@@ -79,7 +79,7 @@ class SupermemoryClient:
 
     def search_memory(self, query: str, container_tag: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
         logger.info(f"Searching... query={query}")
-        payload = {"query": query, "limit": limit}
+        payload = {"q": query, "limit": limit}
         if container_tag:
             payload["containerTag"] = container_tag
             

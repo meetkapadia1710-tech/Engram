@@ -186,6 +186,19 @@ All memory storage and retrieval is handled by the **Supermemory v4 API**. Engra
 | `ANTHROPIC_API_KEY` | _(empty)_ | Required if using Anthropic provider |
 | `GEMINI_API_KEY` | _(empty)_ | Required if using Gemini provider |
 
+### Cognitive Ranking Configuration
+
+Engram re-ranks Supermemory's baseline semantic results using a configurable cognitive formula. You can tune these weights via environment variables without changing code:
+
+| Variable | Default | Description |
+|---|---|---|
+| `ENGRAM_WEIGHT_SIMILARITY` | `0.42` | Weight of Supermemory's raw vector similarity |
+| `ENGRAM_WEIGHT_IMPORTANCE` | `0.16` | Weight of the memory's intrinsic importance score |
+| `ENGRAM_WEIGHT_RECENCY`    | `0.16` | Weight of temporal recency decay |
+| `ENGRAM_WEIGHT_FREQUENCY`  | `0.10` | Weight of access frequency (log-scaled) |
+| `ENGRAM_WEIGHT_RELATIONSHIP`| `0.10`| Weight of graph centrality (relationships) |
+| `ENGRAM_RECENCY_HALF_LIFE_DAYS` | `14` | How many days until a memory's recency score halves |
+
 ---
 
 ## Migrating Existing SQLite Data
@@ -205,6 +218,17 @@ py scripts/migrate_to_supermemory.py \
 # Resume interrupted runs safely — already-migrated IDs are tracked in:
 #   data/migration_log.json
 ```
+
+---
+
+## Benchmarks & Evaluation
+
+Engram ships with a built-in **AI Evaluation Engine** to empirically prove that its cognitive re-ranking improves upon raw baseline vector search. 
+
+Instead of static benchmarks, trigger the `/v1/workspaces/{ws}/evaluation/run` endpoint at any time. It will dynamically evaluate your live workspace and generate an `EvaluationReport` containing:
+- `retrieval_quality`: The relevance of returned context blocks.
+- `ranking_ndcg`: The Normalized Discounted Cumulative Gain, proving the re-ranking algorithm's effectiveness against baseline semantic search.
+- `hallucination_rate` and `grounding_accuracy`
 
 ---
 
@@ -229,17 +253,17 @@ DELETE /v1/memories/{id}                  Delete memory
 GET    /v1/memories/{id}/related          Semantically related memories
 
 # Search & RAG
-POST   /v1/workspaces/{ws}/search         Hybrid semantic + keyword search
+POST   /v1/workspaces/{ws}/search         Hybrid cognitive search (Semantic + Re-ranking)
 POST   /v1/workspaces/{ws}/context        Build RAG context block (cited, token-budgeted)
 GET    /v1/workspaces/{ws}/graph          Knowledge graph (nodes + edges)
 
-# Intelligence
+# Intelligence & Benchmarks
 GET    /v1/workspaces/{ws}/digital-twin            Get AI profile
 POST   /v1/workspaces/{ws}/digital-twin/refresh    Recompute profile
 POST   /v1/workspaces/{ws}/evolution/run           Full knowledge evolution pass
 POST   /v1/workspaces/{ws}/evolution/merge-duplicates
 POST   /v1/workspaces/{ws}/evolution/generate-insights
-POST   /v1/workspaces/{ws}/evaluation/run          Run AI quality evaluation
+POST   /v1/workspaces/{ws}/evaluation/run          Run AI quality evaluation (NDCG benchmarks)
 
 # Agents & Workflows
 POST   /v1/workspaces/{ws}/agents/run     Start multi-agent run

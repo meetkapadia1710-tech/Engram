@@ -99,7 +99,7 @@ type CreateMemoryResponse struct {
 
 // SearchRequest is the body for POST /v4/search.
 type SearchRequest struct {
-	Query        string         `json:"query"`
+	Query        string         `json:"q"`
 	ContainerTag string         `json:"containerTag,omitempty"`
 	Limit        int            `json:"limit,omitempty"`
 	Filters      map[string]any `json:"filters,omitempty"`

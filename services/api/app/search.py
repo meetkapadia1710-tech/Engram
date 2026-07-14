@@ -219,12 +219,12 @@ def hybrid_search(
     now = datetime.now(timezone.utc).isoformat()
     hits: list[SearchHit] = []
     
-    # Re-ranking weights
-    w_sim = 0.50
-    w_imp = 0.15
-    w_rec = 0.20
-    w_freq = 0.10
-    w_rel = 0.05
+    # Re-ranking weights from config (configurable via ENV)
+    w_sim = settings.w_similarity
+    w_imp = settings.w_importance
+    w_rec = settings.w_recency
+    w_freq = settings.w_frequency
+    w_rel = settings.w_relationship
     
     for m in memories:
         # Increment access count immediately to influence future frequency scores
