@@ -182,6 +182,8 @@ def hybrid_search(
 ) -> list[SearchHit]:
     from .db import get_memory_store
     store = get_memory_store(db)
+    
+    # Ask Supermemory for more candidates than needed so we can re-rank them
     memories = store.search(workspace_id, query, limit=limit * 3)
     
     if types:
@@ -207,12 +209,25 @@ def hybrid_search(
                 continue
             keep.append(m)
         memories = keep
+
+    # Pre-compute relationship degrees across the graph for boosting
+    try:
+        degrees = _relationship_degrees(db, workspace_id)
+    except Exception:
+        degrees = {}
         
-    memories = memories[:limit]
     now = datetime.now(timezone.utc).isoformat()
     hits: list[SearchHit] = []
     
-    for i, m in enumerate(memories):
+    # Re-ranking weights
+    w_sim = 0.50
+    w_imp = 0.15
+    w_rec = 0.20
+    w_freq = 0.10
+    w_rel = 0.05
+    
+    for m in memories:
+        # Increment access count immediately to influence future frequency scores
         m.access_count += 1
         m.last_accessed_at = now
         metadata = {
@@ -221,9 +236,40 @@ def hybrid_search(
             "keywords": m.keywords, "tags": m.tags, "access_count": m.access_count,
             "archived": m.archived, "updated_at": m.updated_at
         }
+        # Fire-and-forget update to store
         store.update(m.workspace_id, m.id, m.content, metadata)
         
-        score = max(0.1, 1.0 - (i * 0.05))
-        hits.append(SearchHit(memory=m, final=score, components={"supermemory_score": score}))
+        # 1. Base semantic similarity from Supermemory
+        sim = getattr(m, "_similarity", 0.5)
         
-    return hits
+        # 2. Base importance (length, type, keywords)
+        imp = m.importance or 0.5
+        
+        # 3. Recency decay (exponential decay based on half-life)
+        rec = recency_score(m.created_at)
+        
+        # 4. Access frequency (log scaled)
+        freq = frequency_score(m.access_count)
+        
+        # 5. Graph centrality (how many other memories it connects to)
+        rel = degrees.get(m.id, 0.0)
+        
+        # Blend the scores
+        final = (w_sim * sim) + (w_imp * imp) + (w_rec * rec) + (w_freq * freq) + (w_rel * rel)
+        
+        hits.append(SearchHit(
+            memory=m, 
+            similarity=sim, 
+            final=final, 
+            components={
+                "similarity": round(sim, 3),
+                "importance": round(imp, 3),
+                "recency": round(rec, 3),
+                "frequency": round(freq, 3),
+                "relationship": round(rel, 3),
+            }
+        ))
+        
+    # Sort descending by the blended cognitive score
+    hits.sort(key=lambda h: h.final, reverse=True)
+    return hits[:limit]

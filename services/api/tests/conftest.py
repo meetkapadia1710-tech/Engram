@@ -97,7 +97,14 @@ class MockSupermemoryClient:
             content_lower = m["content"].lower()
             title_lower = m["metadata"].get("title", "").lower()
             if any(q in content_lower or q in title_lower for q in qs):
-                res.append(m)
+                # Return a simulated similarity score based on matched term count
+                matches = sum(1 for q in qs if q in content_lower or q in title_lower)
+                sim = min(0.5 + (matches * 0.1), 0.99)
+                
+                # Clone dict to inject similarity without mutating the stored memory
+                m_out = m.copy()
+                m_out["similarity"] = sim
+                res.append(m_out)
         return res[:limit]
 
     def list_memories(self, container_tag: str, limit: int = 50, offset: int = 0) -> list[dict]:

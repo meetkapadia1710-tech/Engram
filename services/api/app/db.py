@@ -126,6 +126,9 @@ def _map_to_memory(data: Dict[str, Any]) -> Any:
         m.entity_links = links
     else:
         m.entity_links = []
+        
+    # Preserve Supermemory's native vector similarity score if present (used for re-ranking)
+    m._similarity = float(data.get("similarity", 0.0))
     return m
 
 class SupermemoryStore(MemoryStore):
