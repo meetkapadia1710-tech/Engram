@@ -320,25 +320,11 @@ def ingest_memory(
 
 
 def compress_workspace(db: Session, workspace_id: str, older_than_days: int = 90) -> int:
-    """Archive stale, rarely-accessed memories; keep embeddings + graph intact."""
-    cutoff = datetime.now(timezone.utc).timestamp() - older_than_days * 86400
-    n = 0
-    for mem in (
-        db.execute(
-            select(Memory).where(
-                Memory.workspace_id == workspace_id, Memory.archived == 0
-            )
-        )
-        .scalars()
-        .all()
-    ):
-        try:
-            created = datetime.fromisoformat(mem.created_at).timestamp()
-        except ValueError:
-            continue
-        if created < cutoff and mem.access_count < 2 and mem.importance < 0.6:
-            if not mem.summary:
-                mem.summary = mem.content[:280]
-            mem.archived = 1
-            n += 1
-    return n
+    """Archive stale, rarely-accessed memories via the memory store.
+
+    Archiving logic has moved to the /compress router endpoint which operates
+    directly on SupermemoryStore. This function is kept as a stub for any
+    callers that import it but is now a no-op — return 0 to signal no
+    local-DB archiving was performed.
+    """
+    return 0

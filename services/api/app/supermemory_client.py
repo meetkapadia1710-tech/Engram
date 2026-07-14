@@ -31,14 +31,18 @@ class SupermemoryClient:
 
     def create_memory(self, container_tag: str, content: str, metadata: Dict[str, Any], custom_id: Optional[str] = None) -> Dict[str, Any]:
         logger.info(f"Saving memory... container={container_tag}")
-        payload = {
+        memory_item = {
             "content": content,
-            "containerTag": container_tag,
             "metadata": metadata,
             "isStatic": False
         }
         if custom_id:
-            payload["customId"] = custom_id
+            memory_item["customId"] = custom_id
+        
+        payload = {
+            "containerTag": container_tag,
+            "memories": [memory_item]
+        }
             
         try:
             resp = self.client.post("/v4/memories", json=payload)
@@ -50,17 +54,26 @@ class SupermemoryClient:
 
     def update_memory(self, memory_id: str, container_tag: str, content: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"Updating... id={memory_id}")
-        # Delete + Create to preserve metadata if no update endpoint exists
-        self.delete_memory(memory_id)
-        return self.create_memory(container_tag, content, metadata, custom_id=memory_id)
+        payload = {
+            "content": content,
+            "metadata": metadata
+        }
+        try:
+            resp = self.client.patch(f"/v4/memories/{memory_id}", json=payload)
+            resp.raise_for_status()
+            return resp.json()
+        except httpx.HTTPError:
+            # Fallback to delete + create if PATCH is not supported
+            self.delete_memory(memory_id)
+            return self.create_memory(container_tag, content, metadata, custom_id=memory_id)
 
     def delete_memory(self, memory_id: str) -> None:
         logger.info(f"Deleting... id={memory_id}")
         try:
             resp = self.client.delete(f"/v4/memories/{memory_id}")
-            if resp.status_code != 404:
+            if resp.status_code not in (200, 204, 404):
                 resp.raise_for_status()
-            logger.info("Received response... Memory deleted.")
+            logger.info("Received response... Memory deleted (or already absent).")
         except httpx.HTTPError as e:
             self._handle_error(e)
 

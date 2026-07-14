@@ -91,11 +91,17 @@ class MemoryStore(abc.ABC):
 def _map_to_memory(data: Dict[str, Any]) -> Any:
     from .models import Memory, Entity, MemoryEntity
     metadata = data.get("metadata", {})
+    
+    # Supermemory v4 search results use 'memory' as content field; fallback to 'content'
+    content = data.get("content") or data.get("memory", "")
+    # 'id' may come as top-level or nested under customId
+    mem_id = data.get("customId") or data.get("id", uuid.uuid4().hex)
+    workspace = data.get("containerTag", "") or metadata.get("workspace_id", "")
             
     m = Memory(
-        id=data.get("id", data.get("customId", uuid.uuid4().hex)),
-        workspace_id=data.get("containerTag", ""),
-        content=data.get("content", ""),
+        id=mem_id,
+        workspace_id=workspace,
+        content=content,
         type=metadata.get("type", "note"),
         title=metadata.get("title", ""),
         summary=metadata.get("summary", ""),
@@ -105,8 +111,8 @@ def _map_to_memory(data: Dict[str, Any]) -> Any:
         confidence=float(metadata.get("confidence") or 0.8),
         access_count=int(metadata.get("access_count") or 0),
         archived=int(metadata.get("archived") or 0),
-        created_at=metadata.get("created_at", datetime.now(timezone.utc).isoformat()),
-        updated_at=metadata.get("updated_at", datetime.now(timezone.utc).isoformat())
+        created_at=metadata.get("created_at") or data.get("createdAt", datetime.now(timezone.utc).isoformat()),
+        updated_at=metadata.get("updated_at") or data.get("updatedAt", datetime.now(timezone.utc).isoformat()),
     )
     m.keywords = metadata.get("keywords", [])
     m.tags = metadata.get("tags", [])
@@ -164,7 +170,7 @@ class SQLiteStore(MemoryStore):
         self.db = db
         
     def save(self, workspace_id: str, mem_id: str, content: str, metadata: Dict[str, Any]) -> None:
-        pass  # Migration required: no new memory is stored in SQLite
+        pass  # Migration complete: no new memory is stored in SQLite
         
     def search(self, workspace_id: str, query: str, limit: int) -> List[Dict[str, Any]]:
         return []
@@ -181,6 +187,8 @@ class SQLiteStore(MemoryStore):
     def timeline(self, workspace_id: str, limit: int) -> List[Dict[str, Any]]:
         return []
 
+    def get(self, workspace_id: Optional[str], mem_id: str) -> Optional[Any]:
+        return None
 
 def get_memory_store(db: Optional[Session] = None) -> MemoryStore:
     return SupermemoryStore()

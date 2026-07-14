@@ -7,9 +7,10 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, select
 
-from ..models import AuditLog, Entity, Memory, Relationship, Workspace
+from ..db import get_memory_store
+from ..models import AuditLog, Workspace
 from ..schemas import WorkspaceCreate, WorkspaceOut
 from ..security import Guard, audit, guard
 
@@ -38,13 +39,15 @@ def create_workspace(body: WorkspaceCreate, g: Guard = Depends(guard)):
 
 @router.get("/workspaces")
 def list_workspaces(g: Guard = Depends(guard)):
+    store = get_memory_store()
     out = []
     for ws in g.db.execute(select(Workspace)).scalars():
-        count = g.db.execute(
-            select(func.count(Memory.id)).where(
-                Memory.workspace_id == ws.id, Memory.archived == 0
-            )
-        ).scalar_one()
+        # Count active (non-archived) memories via the memory store
+        try:
+            memories = store.list(ws.id, limit=10000, offset=0)
+            count = sum(1 for m in memories if not m.archived)
+        except Exception:
+            count = 0
         out.append(WorkspaceOut(
             id=ws.id, name=ws.name, slug=ws.slug,
             created_at=ws.created_at, memory_count=count,

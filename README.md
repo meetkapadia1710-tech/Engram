@@ -63,6 +63,50 @@ python scripts/seed.py
 
 By default Engram is powered entirely by Supermemory Local for its storage engine — no external vector databases or SQL engines required. Point `SUPERMEMORY_URL` to your Supermemory instance to scale up. See [docs/deployment.md](docs/deployment.md) for more details.
 
+## Supermemory Integration
+
+Engram uses [Supermemory Local](https://supermemory.ai) as its primary storage engine. All memories are stored and retrieved via the Supermemory v4 HTTP API.
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `SUPERMEMORY_URL` | `http://localhost:6767` | Base URL of the Supermemory Local instance |
+| `SUPERMEMORY_API_KEY` | _(empty)_ | Bearer token for Supermemory authentication |
+| `SUPERMEMORY_CONTAINER` | `default-container` | Default container tag (project scope) |
+| `SUPERMEMORY_TIMEOUT` | `10` | HTTP timeout in seconds |
+
+### Running Supermemory Locally
+
+**Option A — Docker (recommended):**
+```bash
+docker compose up supermemory   # exposes :6767
+```
+
+**Option B — npm:**
+```bash
+npm install -g supermemory
+supermemory local               # prints your API key and starts on :6767
+```
+
+Then set `SUPERMEMORY_URL=http://localhost:6767` before starting Engram.
+
+### Migrating Existing SQLite Data
+
+If you have an existing `data/engram.db`, migrate all memories to Supermemory once:
+
+```bash
+# Dry-run first to preview
+py scripts/migrate_to_supermemory.py --dry-run
+
+# Run the actual migration
+py scripts/migrate_to_supermemory.py \
+  --supermemory-url http://localhost:6767 \
+  --api-key <your-api-key>
+```
+
+The script is safe to re-run — already-migrated IDs are tracked in `data/migration_log.json`.
+
 ## Quickstart (Docker)
 
 ```bash
@@ -79,6 +123,7 @@ docker compose up   # api :8000, web :3000, supermemory :6767, redis
 
 ## SDKs
 
+**Python:**
 ```python
 from engram import Engram
 em = Engram("http://localhost:8000", api_key="...")
@@ -87,11 +132,30 @@ hits = em.search("what did I learn about Docker?")
 ctx  = em.retrieve_context("Docker best practices", max_tokens=1500)
 ```
 
+**TypeScript:**
 ```ts
 import { Engram } from "@engram/sdk";
 const em = new Engram({ baseUrl: "http://localhost:8000", apiKey: "..." });
 await em.createMemory({ content: "…", type: "note" });
 const hits = await em.search({ query: "docker" });
+```
+
+**Go (Supermemory direct):**
+```go
+import "github.com/engram/sdk-go/supermemory"
+
+client := supermemory.NewClient(supermemory.Config{
+    BaseURL: "http://localhost:6767",
+    APIKey:  os.Getenv("SUPERMEMORY_API_KEY"),
+})
+
+resp, err := client.CreateMemory(ctx, "my-project", []supermemory.Memory{
+    {Content: "Use hexagonal architecture for clean separation.", Metadata: map[string]any{"type": "architecture"}},
+})
+
+results, err := client.SearchMemory(ctx, supermemory.SearchRequest{
+    Query: "hexagonal architecture", ContainerTag: "my-project", Limit: 5,
+})
 ```
 
 ## License
