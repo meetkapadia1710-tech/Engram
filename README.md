@@ -4,16 +4,29 @@
 
 Engram is a universal, self-hostable memory platform for AI agents and LLM applications. Instead of forgetting every conversation, your agents remember — semantically, temporally, and relationally.
 
-```
-Raw text ─▶ chunk ─▶ clean ─▶ embed ─▶ extract entities ─▶ detect relationships
-        ─▶ store ─▶ update graph ─▶ update vectors ─▶ update search index
+Engram is an intelligent client and application layer that sits on top of **Supermemory Local**. While Supermemory handles the heavy lifting of vector storage and retrieval, Engram provides the higher-level capabilities: API routing, workspaces, knowledge graphs, and RAG context assembly.
+
+```text
+Claude / Codex / Cursor
+            │
+            ▼
+        Engram CLI
+            │
+            ▼
+     Memory Service Layer
+            │
+            ▼
+   Supermemory Local API
+            │
+            ▼
+    Supermemory Storage
 ```
 
 ## Why Engram
 
-- **Hybrid retrieval** — vector similarity + BM25 keyword search fused with Reciprocal Rank Fusion, then re-ranked by importance, recency, frequency, and relationship weight.
-- **Knowledge graph** — every memory and every extracted entity (people, projects, technologies, organizations…) becomes a graph node; relationships (`mentions`, `references`, `related_to`, `belongs_to`, …) are detected automatically.
-- **Temporal reasoning** — time-scoped recall ("what did I learn last week?"), recency decay, and a full memory timeline.
+- **Supermemory Native** — Uses Supermemory Local as its primary storage engine, meaning no separate vector databases or complex indexing infrastructure to manage.
+- **Knowledge graph** — Every memory and every extracted entity (people, projects, technologies, organizations…) becomes a graph node, built automatically from metadata.
+- **Temporal reasoning** — Time-scoped recall, recency decay, and a full memory timeline powered by Supermemory's container tagging.
 - **Provider-agnostic AI layer** — OpenAI, Anthropic, Gemini, or Ollama behind one abstraction; switch with an env var. Ships with a fully-local deterministic embedder so it works with **zero API keys**.
 - **RAG-ready** — one call (`/v1/context`) assembles a cited, token-budgeted context block for any LLM prompt.
 - **Production posture** — API-key auth, rate limiting, audit log, workspaces/multi-tenancy, OpenAPI, Docker, CI, tests.
@@ -25,8 +38,8 @@ apps/web          Next.js 15 + React 19 frontend (dashboard, search, graph, time
 services/api      FastAPI backend (pipeline, hybrid search, graph, RAG)
 sdk/python        Python SDK
 sdk/typescript    TypeScript SDK
-database/         SQL schema (PostgreSQL + pgvector) and ER docs
-docker/           Dockerfiles
+database/         Supermemory configuration and schemas
+docker/           Dockerfiles including Supermemory Local
 docs/             Architecture, API, deployment, contribution guides
 scripts/          Dev & seed scripts
 ```
@@ -48,12 +61,12 @@ npm run dev
 python scripts/seed.py
 ```
 
-By default Engram is powered by Supermemory Local for its storage engine — no external vector databases required. Point `SUPERMEMORY_URL` to your Supermemory instance to scale up. See [docs/deployment.md](docs/deployment.md) for more details.
+By default Engram is powered entirely by Supermemory Local for its storage engine — no external vector databases or SQL engines required. Point `SUPERMEMORY_URL` to your Supermemory instance to scale up. See [docs/deployment.md](docs/deployment.md) for more details.
 
 ## Quickstart (Docker)
 
 ```bash
-docker compose up   # api :8000, web :3000, supermemory :6767, postgres, redis
+docker compose up   # api :8000, web :3000, supermemory :6767, redis
 ```
 
 ## Documentation
