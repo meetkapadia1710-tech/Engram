@@ -1,146 +1,321 @@
 # Engram
 
+<div align="center">
+
 **The memory layer for AI. Every interaction becomes knowledge.**
 
-Engram is a universal, self-hostable memory platform for AI agents and LLM applications. Instead of forgetting every conversation, your agents remember — semantically, temporally, and relationally.
+[![Tests](https://img.shields.io/badge/tests-30%20passed-brightgreen)](#testing)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](#quickstart)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](#license)
+[![Powered by Supermemory](https://img.shields.io/badge/powered%20by-Supermemory-8B5CF6)](https://supermemory.ai)
 
-Engram is an intelligent client and application layer that sits on top of **Supermemory Local**. While Supermemory handles the heavy lifting of vector storage and retrieval, Engram provides the higher-level capabilities: API routing, workspaces, knowledge graphs, and RAG context assembly.
+</div>
 
-```text
-Claude / Codex / Cursor
-            │
-            ▼
-        Engram CLI
-            │
-            ▼
-     Memory Service Layer
-            │
-            ▼
-   Supermemory Local API
-            │
-            ▼
-    Supermemory Storage
+Engram is a universal, self-hostable memory platform for AI agents and LLM applications. Instead of forgetting every conversation, your agents remember — **semantically, temporally, and relationally** — across every session, tool, and model.
+
+Engram is an intelligent application layer built on top of **[Supermemory Local](https://supermemory.ai)**. Supermemory handles the heavy lifting of vector storage and semantic retrieval; Engram provides the higher-level platform: workspaces, knowledge graphs, multi-agent orchestration, workflow automation, RAG context assembly, and a full web dashboard.
+
 ```
+  Claude / Codex / Cursor / Your Agent
+               │
+               ▼
+    ┌─────────────────────┐
+    │      Engram API      │  workspaces · search · graph · RAG
+    │   (FastAPI :8000)    │  agents · workflows · plugins · eval
+    └─────────────────────┘
+               │
+               ▼
+    ┌─────────────────────┐
+    │  Supermemory Local   │  vector storage · semantic search
+    │     (:6767)          │  container tagging · v4 API
+    └─────────────────────┘
+```
+
+---
 
 ## Why Engram
 
-- **Supermemory Native** — Uses Supermemory Local as its primary storage engine, meaning no separate vector databases or complex indexing infrastructure to manage.
-- **Knowledge graph** — Every memory and every extracted entity (people, projects, technologies, organizations…) becomes a graph node, built automatically from metadata.
-- **Temporal reasoning** — Time-scoped recall, recency decay, and a full memory timeline powered by Supermemory's container tagging.
-- **Provider-agnostic AI layer** — OpenAI, Anthropic, Gemini, or Ollama behind one abstraction; switch with an env var. Ships with a fully-local deterministic embedder so it works with **zero API keys**.
-- **RAG-ready** — one call (`/v1/context`) assembles a cited, token-budgeted context block for any LLM prompt.
-- **Production posture** — API-key auth, rate limiting, audit log, workspaces/multi-tenancy, OpenAPI, Docker, CI, tests.
+| Capability | Details |
+|---|---|
+| 🧠 **Supermemory Native** | Uses Supermemory Local as its sole storage engine — no separate vector DB or FTS index to manage |
+| 🕸 **Knowledge Graph** | Every memory's extracted entities (people, projects, tech, orgs) become graph nodes, auto-linked by cosine similarity and co-occurrence |
+| ⏱ **Temporal Reasoning** | Recency decay, time-scoped recall, full memory timeline, and `forgetAfter` TTL support via Supermemory container tags |
+| 🤖 **Multi-Agent Orchestration** | Define agent teams with goals; Engram routes tasks and merges their conclusions back into memory |
+| ⚡ **Workflow Automation** | Event-driven workflows triggered by memory events (MemoryCreated, SearchExecuted, …) |
+| 🔌 **Plugin Marketplace** | First-party and third-party plugins extend the platform — install, enable/disable, roll back, per workspace |
+| 🪄 **RAG-Ready** | `/v1/context` assembles a cited, token-budgeted context block for any LLM prompt in one HTTP call |
+| 👤 **Digital Twin** | Infers skill scores, productivity patterns, cognitive gaps, and future predictions from your memory history |
+| 📊 **AI Evaluation** | On-demand evaluation reports: retrieval quality, hallucination rate, grounding accuracy, NDCG ranking |
+| 🔒 **Production Ready** | API-key auth, rate limiting, audit log, multi-tenancy, OpenAPI docs, Docker Compose, 30-test CI suite |
 
-## Monorepo layout
+---
+
+## Monorepo Layout
 
 ```
-apps/web          Next.js 15 + React 19 frontend (dashboard, search, graph, timeline)
-services/api      FastAPI backend (pipeline, hybrid search, graph, RAG)
-sdk/python        Python SDK
-sdk/typescript    TypeScript SDK
-database/         Supermemory configuration and schemas
-docker/           Dockerfiles including Supermemory Local
-docs/             Architecture, API, deployment, contribution guides
-scripts/          Dev & seed scripts
+apps/web/           Next.js 15 + React 19 dashboard
+  ├── search/         Semantic search UI
+  ├── timeline/       Memory timeline
+  ├── graph/          Interactive knowledge graph
+  ├── agents/         Multi-agent run viewer
+  ├── workflows/      Workflow builder
+  ├── marketplace/    Plugin catalog
+  ├── digital-twin/   Personal AI profile
+  ├── observability/  Metrics & traces
+  └── events/         Real-time SSE event stream
+
+services/api/       FastAPI backend
+  ├── routers/        memories · search · workspaces · agents · workflows
+  │                   plugins · tools · events · intelligence · observability
+  ├── pipeline.py     Ingestion: clean → chunk → embed → keywords → entities
+  ├── search.py       Hybrid search (vector + BM25 + RRF + re-ranking)
+  ├── rag.py          RAG context builder
+  ├── graph.py        Knowledge graph builder
+  ├── supermemory_client.py  Supermemory v4 HTTP client
+  └── db.py           MemoryStore abstraction → SupermemoryStore
+
+sdk/go/             Go SDK
+  ├── engram/         High-level Engram API client
+  └── supermemory/    Low-level Supermemory v4 client
+
+sdk/cli/            Python CLI (engram workspace/memory/search/agent/…)
+sdk/python/         Python SDK (Engram class)
+sdk/typescript/     TypeScript SDK (@engram/sdk)
+
+scripts/
+  ├── seed.py                    Seed demo workspace & memories
+  └── migrate_to_supermemory.py  Bulk-migrate SQLite → Supermemory
+
+database/           SQL schema (Postgres + pgvector)
+docker/             Dockerfiles (api · web)
+docs/               Architecture · API · deployment · contributing
 ```
 
-## Quickstart (local, no Docker)
+---
 
-```powershell
-# backend — http://localhost:8000  (docs at /docs)
+## Quickstart
+
+### Option A — Docker (recommended)
+
+```bash
+docker compose up
+```
+
+Services started:
+
+| Service | URL | Description |
+|---|---|---|
+| Engram API | http://localhost:8000 | REST API + OpenAPI docs at `/docs` |
+| Web Dashboard | http://localhost:3000 | Next.js frontend |
+| Supermemory Local | http://localhost:6767 | Vector storage engine |
+| Postgres | localhost:5432 | Workspace & audit metadata |
+
+### Option B — Local (no Docker)
+
+**1. Start Supermemory Local**
+
+```bash
+# via npm
+npm install -g supermemory
+supermemory local
+# → prints your API key and listens on :6767
+```
+
+**2. Start the API**
+
+```bash
 cd services/api
 pip install -r requirements.txt
-python -m uvicorn app.main:app --port 8000
 
-# frontend — http://localhost:3000
+# point Engram at your local Supermemory
+$env:SUPERMEMORY_URL = "http://localhost:6767"
+$env:SUPERMEMORY_API_KEY = "<key-from-step-1>"   # optional if open mode
+
+py -m uvicorn app.main:app --port 8000 --reload
+# → API docs at http://localhost:8000/docs
+```
+
+**3. Start the web dashboard**
+
+```bash
 cd apps/web
 npm install
 npm run dev
-
-# seed demo data
-python scripts/seed.py
+# → Dashboard at http://localhost:3000
 ```
 
-By default Engram is powered entirely by Supermemory Local for its storage engine — no external vector databases or SQL engines required. Point `SUPERMEMORY_URL` to your Supermemory instance to scale up. See [docs/deployment.md](docs/deployment.md) for more details.
+**4. Seed demo data**
+
+```bash
+py scripts/seed.py
+```
+
+---
 
 ## Supermemory Integration
 
-Engram uses [Supermemory Local](https://supermemory.ai) as its primary storage engine. All memories are stored and retrieved via the Supermemory v4 HTTP API.
+All memory storage and retrieval is handled by the **Supermemory v4 API**. Engram maps its workspace/memory model to Supermemory's `containerTag` + `metadata` model:
+
+| Engram field | Supermemory field | Notes |
+|---|---|---|
+| `workspace_id` | `containerTag` | Each workspace = isolated container |
+| `content` | `content` | Memory body (up to 10k chars) |
+| `id` | `customId` | Deterministic ID for idempotent writes |
+| `type`, `title`, `tags`, … | `metadata.*` | Rich metadata stored as JSON |
+| `created_at` | `metadata.created_at` | Original timestamp preserved |
 
 ### Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
-| `SUPERMEMORY_URL` | `http://localhost:6767` | Base URL of the Supermemory Local instance |
-| `SUPERMEMORY_API_KEY` | _(empty)_ | Bearer token for Supermemory authentication |
-| `SUPERMEMORY_CONTAINER` | `default-container` | Default container tag (project scope) |
-| `SUPERMEMORY_TIMEOUT` | `10` | HTTP timeout in seconds |
+| `SUPERMEMORY_URL` | `http://localhost:6767` | Supermemory Local base URL |
+| `SUPERMEMORY_API_KEY` | _(empty)_ | Bearer token (leave empty for open/dev mode) |
+| `SUPERMEMORY_CONTAINER` | `default-container` | Fallback container tag |
+| `SUPERMEMORY_TIMEOUT` | `10` | HTTP request timeout (seconds) |
 
-### Running Supermemory Locally
+### Other Configuration
 
-**Option A — Docker (recommended):**
+| Variable | Default | Description |
+|---|---|---|
+| `ENGRAM_DATABASE_URL` | `sqlite:///data/engram.db` | Postgres URL for workspace/audit metadata |
+| `ENGRAM_API_KEYS` | _(empty = open)_ | Comma-separated API keys to require auth |
+| `ENGRAM_EMBEDDING_PROVIDER` | `local` | `local` · `openai` · `gemini` · `ollama` |
+| `ENGRAM_GENERATION_PROVIDER` | `local` | `local` · `openai` · `anthropic` · `gemini` · `ollama` |
+| `ENGRAM_CORS_ORIGINS` | `http://localhost:3000` | Allowed CORS origins |
+| `OPENAI_API_KEY` | _(empty)_ | Required if using OpenAI provider |
+| `ANTHROPIC_API_KEY` | _(empty)_ | Required if using Anthropic provider |
+| `GEMINI_API_KEY` | _(empty)_ | Required if using Gemini provider |
+
+---
+
+## Migrating Existing SQLite Data
+
+If you have memories in a pre-migration `data/engram.db`, run the one-time migration script:
+
 ```bash
-docker compose up supermemory   # exposes :6767
-```
-
-**Option B — npm:**
-```bash
-npm install -g supermemory
-supermemory local               # prints your API key and starts on :6767
-```
-
-Then set `SUPERMEMORY_URL=http://localhost:6767` before starting Engram.
-
-### Migrating Existing SQLite Data
-
-If you have an existing `data/engram.db`, migrate all memories to Supermemory once:
-
-```bash
-# Dry-run first to preview
+# Preview what will be migrated (no writes)
 py scripts/migrate_to_supermemory.py --dry-run
 
-# Run the actual migration
+# Run the migration
 py scripts/migrate_to_supermemory.py \
   --supermemory-url http://localhost:6767 \
-  --api-key <your-api-key>
+  --api-key <your-key> \
+  --batch-size 50
+
+# Resume interrupted runs safely — already-migrated IDs are tracked in:
+#   data/migration_log.json
 ```
 
-The script is safe to re-run — already-migrated IDs are tracked in `data/migration_log.json`.
+---
 
-## Quickstart (Docker)
+## API Reference
 
-```bash
-docker compose up   # api :8000, web :3000, supermemory :6767, redis
+Interactive docs at **http://localhost:8000/docs**
+
+### Core Endpoints
+
+```
+# Workspaces
+POST   /v1/workspaces                     Create workspace
+GET    /v1/workspaces                     List workspaces
+DELETE /v1/workspaces/{id}                Delete workspace
+
+# Memories
+POST   /v1/workspaces/{ws}/memories       Create memory (runs full ingestion pipeline)
+GET    /v1/workspaces/{ws}/memories       List memories (filter by type, archived)
+GET    /v1/memories/{id}                  Get memory (increments access_count)
+PATCH  /v1/memories/{id}                  Update memory (content, tags, importance…)
+DELETE /v1/memories/{id}                  Delete memory
+GET    /v1/memories/{id}/related          Semantically related memories
+
+# Search & RAG
+POST   /v1/workspaces/{ws}/search         Hybrid semantic + keyword search
+POST   /v1/workspaces/{ws}/context        Build RAG context block (cited, token-budgeted)
+GET    /v1/workspaces/{ws}/graph          Knowledge graph (nodes + edges)
+
+# Intelligence
+GET    /v1/workspaces/{ws}/digital-twin            Get AI profile
+POST   /v1/workspaces/{ws}/digital-twin/refresh    Recompute profile
+POST   /v1/workspaces/{ws}/evolution/run           Full knowledge evolution pass
+POST   /v1/workspaces/{ws}/evolution/merge-duplicates
+POST   /v1/workspaces/{ws}/evolution/generate-insights
+POST   /v1/workspaces/{ws}/evaluation/run          Run AI quality evaluation
+
+# Agents & Workflows
+POST   /v1/workspaces/{ws}/agents/run     Start multi-agent run
+GET    /v1/workspaces/{ws}/workflows      List workflows
+POST   /v1/workspaces/{ws}/workflows/{id}/trigger
+
+# Marketplace
+GET    /v1/catalog                        Browse plugin catalog
+POST   /v1/workspaces/{ws}/plugins/{slug}/install
+
+# Observability
+GET    /metrics                           Prometheus metrics
+GET    /v1/metrics                        JSON snapshot
+GET    /v1/workspaces/{ws}/analytics      Memory stats + activity
+GET    /v1/workspaces/{ws}/audit          Audit log
 ```
 
-## Documentation
-
-- [Architecture](docs/architecture.md) — pipeline, ranking formula, graph model, ER diagram
-- [API reference](docs/api.md) — REST endpoints (interactive OpenAPI at `/docs`)
-- [Deployment](docs/deployment.md) — Docker, Postgres, provider configuration
-- [Contributing](docs/contributing.md)
-- [User guide](docs/user-guide.md)
+---
 
 ## SDKs
 
-**Python:**
+### Python CLI
+
+```bash
+engram workspace list
+engram workspace create "My Project"
+
+engram memory add --workspace <ws-id> --type note --tags "k8s,infra"
+# → prompts for content, stores to Supermemory
+
+engram search "kubernetes liveness probes" --workspace <ws-id> --limit 5
+engram context "docker best practices" --workspace <ws-id>
+
+engram agent run "Analyse our architecture decisions" --workspace <ws-id>
+engram evolution --workspace <ws-id>
+engram eval run --workspace <ws-id>
+engram metrics
+```
+
+### Python SDK
+
 ```python
 from engram import Engram
+
 em = Engram("http://localhost:8000", api_key="...")
-em.create_memory("Docker layers are cached by instruction order.", type="note")
-hits = em.search("what did I learn about Docker?")
-ctx  = em.retrieve_context("Docker best practices", max_tokens=1500)
+
+# Store a memory (runs full pipeline: clean → embed → entities → Supermemory)
+mem = em.memories.create(workspace_id, content="Docker layers are cached by instruction order.", type="note")
+
+# Semantic search
+hits = em.search.search(workspace_id, "docker layer caching", limit=5)
+
+# RAG context block for an LLM prompt
+ctx = em.search.context(workspace_id, "docker best practices", max_tokens=1500)
+print(ctx["context"])   # Cited, token-budgeted block ready to paste into a prompt
 ```
 
-**TypeScript:**
+### TypeScript SDK
+
 ```ts
 import { Engram } from "@engram/sdk";
+
 const em = new Engram({ baseUrl: "http://localhost:8000", apiKey: "..." });
-await em.createMemory({ content: "…", type: "note" });
-const hits = await em.search({ query: "docker" });
+
+await em.memories.create(workspaceId, {
+  content: "Use hexagonal architecture to separate domain from infra.",
+  type: "note",
+  tags: ["architecture"],
+});
+
+const { results } = await em.search.search(workspaceId, { query: "hexagonal architecture", limit: 5 });
+const { context } = await em.search.context(workspaceId, { query: "architecture patterns", maxTokens: 2000 });
 ```
 
-**Go (Supermemory direct):**
+### Go SDK — Supermemory Direct
+
 ```go
 import "github.com/engram/sdk-go/supermemory"
 
@@ -149,14 +324,110 @@ client := supermemory.NewClient(supermemory.Config{
     APIKey:  os.Getenv("SUPERMEMORY_API_KEY"),
 })
 
+// Create a memory
 resp, err := client.CreateMemory(ctx, "my-project", []supermemory.Memory{
-    {Content: "Use hexagonal architecture for clean separation.", Metadata: map[string]any{"type": "architecture"}},
+    {
+        Content: "Use hexagonal architecture for clean separation of concerns.",
+        Metadata: map[string]any{
+            "type":    "architecture",
+            "session": "session-123",
+        },
+    },
 })
 
+// Search
 results, err := client.SearchMemory(ctx, supermemory.SearchRequest{
-    Query: "hexagonal architecture", ContainerTag: "my-project", Limit: 5,
+    Query:        "hexagonal architecture",
+    ContainerTag: "my-project",
+    Limit:        5,
 })
+
+// Update
+_, err = client.UpdateMemory(ctx, "my-project", results.Results[0].ID, "Updated content...")
+
+// Delete (soft — marks as forgotten in Supermemory)
+_, err = client.DeleteMemory(ctx, results.Results[0].ID)
 ```
+
+### Go SDK — Engram API
+
+```go
+import "github.com/engram/sdk-go/engram"
+
+client := engram.New("http://localhost:8000", engram.WithAPIKey("..."))
+
+// Workspaces
+ws, _ := client.Workspaces.Create(ctx, "My Project", "my-project")
+
+// Memories
+mem, _ := client.Memories.Create(ctx, ws.ID, engram.MemoryCreate{
+    Content: "Kubernetes liveness probes restart containers on failure.",
+    Type:    "note",
+    Tags:    []string{"k8s", "ops"},
+})
+
+// Search
+hits, _ := client.Search.Search(ctx, ws.ID, "kubernetes health checks", 10)
+ctx_block, _ := client.Search.Context(ctx, ws.ID, "k8s best practices", 2000)
+
+// Agents
+run, _ := client.Agents.Run(ctx, ws.ID, "Analyse our deployment strategy", nil)
+```
+
+---
+
+## Ingestion Pipeline
+
+Every memory passes through the full pipeline on creation:
+
+```
+raw text
+   │
+   ▼  clean_text()         normalise whitespace, strip CRLF
+   │
+   ▼  chunk_text()         paragraph-aware sliding window (900 chars, 120 overlap)
+   │
+   ▼  embed()              local (256-dim hash) | OpenAI | Gemini | Ollama
+   │
+   ▼  extract_keywords()   top-8 unstemmed terms by frequency
+   │
+   ▼  extract_entities()   heuristic NER: tech lexicon + capitalized spans + emails/URLs
+   │
+   ▼  score_importance()   length + type + signal keywords → [0.2, 0.95]
+   │
+   ▼  generate_summary()   LLM summary for content > 280 chars (optional)
+   │
+   ▼  SupermemoryStore.save()   POST /v4/memories  → Supermemory Local
+```
+
+---
+
+## Testing
+
+```bash
+cd services/api
+py -m pytest tests/ -v
+# → 30 passed in ~2s (all use an in-memory Supermemory mock — no server needed)
+```
+
+Test coverage:
+- `test_api.py` — Full CRUD lifecycle, search, context, analytics, audit log
+- `test_pipeline.py` — Chunking, embeddings, entity extraction, importance scoring, ingest
+- `test_search.py` — BM25, hybrid search, type/tag filters, access count, recency decay
+
+---
+
+## Documentation
+
+| Doc | Description |
+|---|---|
+| [Architecture](docs/architecture.md) | Pipeline, ranking formula, graph model, ER diagram |
+| [API Reference](docs/api.md) | All REST endpoints (interactive at `/docs`) |
+| [Deployment](docs/deployment.md) | Docker, Postgres, AI provider configuration |
+| [Contributing](docs/contributing.md) | How to add features, run tests, open PRs |
+| [User Guide](docs/user-guide.md) | End-to-end usage walkthrough |
+
+---
 
 ## License
 
