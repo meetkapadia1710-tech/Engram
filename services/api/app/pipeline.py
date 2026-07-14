@@ -260,7 +260,9 @@ def ingest_memory(
         except Exception:
             summary = content[:280]
 
+    import uuid
     memory = Memory(
+        id=uuid.uuid4().hex,
         workspace_id=workspace_id,
         type=type_,
         title=title,
@@ -269,11 +271,27 @@ def ingest_memory(
         source=source,
         author=author,
         importance=score_importance(content, type_),
+        confidence=0.8,
+        access_count=0,
+        archived=0,
+        created_at=datetime.now(timezone.utc).isoformat(),
+        updated_at=datetime.now(timezone.utc).isoformat(),
     )
     memory.keywords = keywords
     memory.tags = tags or []
     memory.embedding = doc_vec
     
+    entities_data = extract_entities(content)
+    
+    if entities_data:
+        from .models import Entity, MemoryEntity
+        links = []
+        import uuid
+        for n, k in entities_data:
+            e = Entity(id=uuid.uuid4().hex, name=n, kind=k)
+            links.append(MemoryEntity(entity=e))
+        memory.entity_links = links
+        
     metadata = {
         "title": title,
         "type": type_,
@@ -283,7 +301,11 @@ def ingest_memory(
         "importance": memory.importance,
         "keywords": keywords,
         "tags": tags or [],
-        "entities": extract_entities(content)
+        "entities": entities_data,
+        "created_at": memory.created_at,
+        "updated_at": memory.updated_at,
+        "access_count": memory.access_count,
+        "confidence": memory.confidence,
     }
     from .db import get_memory_store
     store = get_memory_store(db)

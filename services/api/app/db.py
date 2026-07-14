@@ -89,31 +89,22 @@ class MemoryStore(abc.ABC):
 
 
 def _map_to_memory(data: Dict[str, Any]) -> Any:
-    from .models import Memory
+    from .models import Memory, Entity, MemoryEntity
     metadata = data.get("metadata", {})
-    # Mock entities to avoid SQLAlchemy relationship errors
-    class MockEntity:
-        def __init__(self, name, kind):
-            self.id = uuid.uuid4().hex
-            self.name = name
-            self.kind = kind
-    class MockLink:
-        def __init__(self, name, kind):
-            self.entity = MockEntity(name, kind)
             
     m = Memory(
         id=data.get("id", data.get("customId", uuid.uuid4().hex)),
         workspace_id=data.get("containerTag", ""),
+        content=data.get("content", ""),
         type=metadata.get("type", "note"),
         title=metadata.get("title", ""),
-        content=data.get("content", ""),
         summary=metadata.get("summary", ""),
-        source=metadata.get("source", ""),
-        author=metadata.get("author", ""),
-        importance=float(metadata.get("importance", 0.5)),
-        confidence=float(metadata.get("confidence", 0.8)),
-        access_count=int(metadata.get("access_count", 0)),
-        archived=int(metadata.get("archived", 0)),
+        source=metadata.get("source"),
+        author=metadata.get("author"),
+        importance=float(metadata.get("importance") or 0.5),
+        confidence=float(metadata.get("confidence") or 0.8),
+        access_count=int(metadata.get("access_count") or 0),
+        archived=int(metadata.get("archived") or 0),
         created_at=metadata.get("created_at", datetime.now(timezone.utc).isoformat()),
         updated_at=metadata.get("updated_at", datetime.now(timezone.utc).isoformat())
     )
@@ -121,7 +112,14 @@ def _map_to_memory(data: Dict[str, Any]) -> Any:
     m.tags = metadata.get("tags", [])
     # Reconstruct entities if saved in metadata
     entities_data = metadata.get("entities", [])
-    m.entity_links = [MockLink(n, k) for n, k in entities_data] if entities_data else []
+    if entities_data:
+        links = []
+        for n, k in entities_data:
+            e = Entity(id=uuid.uuid4().hex, name=n, kind=k)
+            links.append(MemoryEntity(entity=e))
+        m.entity_links = links
+    else:
+        m.entity_links = []
     return m
 
 class SupermemoryStore(MemoryStore):
@@ -152,11 +150,13 @@ class SupermemoryStore(MemoryStore):
         memories.sort(key=lambda x: x.created_at, reverse=True)
         return memories
 
-    def get(self, workspace_id: str, mem_id: str) -> Optional[Any]:
+    def get(self, workspace_id: Optional[str], mem_id: str) -> Optional[Any]:
         data = self.client.get_memory(mem_id)
-        if data:
-            return _map_to_memory(data)
-        return None
+        if not data:
+            return None
+        if workspace_id is not None and data.get("containerTag") != workspace_id:
+            return None
+        return _map_to_memory(data)
 
 
 class SQLiteStore(MemoryStore):

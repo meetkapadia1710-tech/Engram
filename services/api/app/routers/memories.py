@@ -9,9 +9,9 @@ from sqlalchemy import desc, select
 
 from ..events import emit
 from ..graph import find_related
+from ..models import Workspace
 from ..pipeline import compress_workspace, ingest_memory
 from ..schemas import MEMORY_TYPES, MemoryCreate, MemoryOut, MemoryUpdate
-from ..security import Guard, audit, guard
 from ..db import get_memory_store
 from ..security import Guard, audit, guard
 
@@ -152,7 +152,8 @@ def delete_memory(memory_id: str, g: Guard = Depends(guard)):
 
 @router.get("/memories/{memory_id}/related")
 def related(memory_id: str, g: Guard = Depends(guard), limit: int = Query(default=8, ge=1, le=25)):
-    if g.db.get(Memory, memory_id) is None:
+    store = get_memory_store(g.db)
+    if store.get(None, memory_id) is None:
         raise HTTPException(status_code=404, detail="memory not found")
     return {"items": find_related(g.db, memory_id, limit=limit)}
 
