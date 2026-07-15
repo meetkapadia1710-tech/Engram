@@ -62,17 +62,24 @@ apps/web/           Next.js 15 + React 19 dashboard
   ├── marketplace/    Plugin catalog
   ├── digital-twin/   Personal AI profile
   ├── observability/  Metrics & traces
-  └── events/         Real-time SSE event stream
+  ├── events/         Real-time SSE event stream
+  ├── settings/       Settings configuration
+  └── tools/          Tool management
 
 services/api/       FastAPI backend
-  ├── routers/        memories · search · workspaces · agents · workflows
+  ├── app/routers/    memories · search · workspaces · agents · workflows
   │                   plugins · tools · events · intelligence · observability
-  ├── pipeline.py     Ingestion: clean → chunk → embed → keywords → entities
-  ├── search.py       Hybrid search (vector + BM25 + RRF + re-ranking)
-  ├── rag.py          RAG context builder
-  ├── graph.py        Knowledge graph builder
-  ├── supermemory_client.py  Supermemory v4 HTTP client
-  └── db.py           MemoryStore abstraction → SupermemoryStore
+  ├── app/pipeline.py Ingestion: clean → chunk → embed → keywords → entities
+  ├── app/search.py   Hybrid search (vector + BM25 + RRF + re-ranking)
+  ├── app/rag.py      RAG context builder
+  ├── app/graph.py    Knowledge graph builder
+  ├── app/db.py       MemoryStore abstraction → SupermemoryStore
+  ├── app/supermemory_client.py  Supermemory v4 HTTP client
+  ├── app/evaluation.py  AI Evaluation Engine
+  ├── app/digital_twin.py Digital Twin profile generation
+  ├── app/knowledge_evolution.py Knowledge evolution & insights
+  ├── app/ai.py       LLM provider integrations
+  └── app/tools.py    Tool execution engine
 
 sdk/go/             Go SDK
   ├── engram/         High-level Engram API client
@@ -273,6 +280,11 @@ POST   /v1/workspaces/{ws}/workflows/{id}/trigger
 # Marketplace
 GET    /v1/catalog                        Browse plugin catalog
 POST   /v1/workspaces/{ws}/plugins/{slug}/install
+
+# Tools
+GET    /v1/tools                              List all registered tools
+POST   /v1/workspaces/{ws}/tools/{name}       Execute a tool
+GET    /v1/workspaces/{ws}/tool-executions    Execution history
 
 # Observability
 GET    /metrics                           Prometheus metrics
