@@ -61,7 +61,11 @@ def workspace_id(client):
 
 
 class MockSupermemoryClient:
-    """In-memory mock of SupermemoryClient for unit tests."""
+    """In-memory mock of SupermemoryClient, shaped like the real v3 API
+    (verified against a live Supermemory Local instance — see
+    supermemory_client.py's module docstring): documents use `containerTags`
+    (plural, array); search hits are a thinner shape keyed by `documentId`
+    with content nested under `chunks[].content`, not the document shape."""
 
     def __init__(self):
         self._memories: dict[str, dict] = {}
@@ -71,25 +75,24 @@ class MockSupermemoryClient:
         data = {
             "id": m_id,
             "customId": m_id,
-            "containerTag": container_tag,
+            "containerTags": [container_tag],
             "content": content,
+            "title": metadata.get("title", ""),
             "metadata": metadata,
         }
         self._memories[m_id] = data
-        return data
+        return {"id": m_id, "status": "queued"}
 
     def update_memory(self, memory_id: str, container_tag: str, content: str, metadata: dict) -> dict | None:
         if memory_id in self._memories:
-            self._memories[memory_id] = {
-                "id": memory_id,
-                "customId": memory_id,
-                "containerTag": container_tag,
-                "content": content,
-                "metadata": metadata,
-            }
-            return self._memories[memory_id]
-        # Recreate if not found
-        return self.create_memory(container_tag, content, metadata, custom_id=memory_id)
+            self._memories[memory_id]["content"] = content
+            self._memories[memory_id]["metadata"] = metadata
+            self._memories[memory_id]["title"] = metadata.get("title", "")
+            return {"id": memory_id, "status": "queued"}
+        # Recreate if not found (matches the real API: PATCH on a missing id 404s,
+        # but tests that exercise update-before-create aren't the concern here)
+        self.create_memory(container_tag, content, metadata, custom_id=memory_id)
+        return {"id": memory_id, "status": "queued"}
 
     def delete_memory(self, memory_id: str) -> None:
         self._memories.pop(memory_id, None)
@@ -98,33 +101,35 @@ class MockSupermemoryClient:
         qs = query.lower().split()
         res = []
         for m in self._memories.values():
-            if container_tag and m["containerTag"] != container_tag:
+            if container_tag and container_tag not in m["containerTags"]:
                 continue
             content_lower = m["content"].lower()
             title_lower = m["metadata"].get("title", "").lower()
             if any(q in content_lower or q in title_lower for q in qs):
-                # Return a simulated similarity score based on matched term count
+                # Simulated similarity score based on matched term count
                 matches = sum(1 for q in qs if q in content_lower or q in title_lower)
                 sim = min(0.5 + (matches * 0.1), 0.99)
-                
-                # Clone dict to inject similarity without mutating the stored memory
-                m_out = m.copy()
-                m_out["similarity"] = sim
-                res.append(m_out)
+
+                res.append({
+                    "documentId": m["id"],
+                    "score": sim,
+                    "title": m["title"],
+                    "metadata": m["metadata"],
+                    "chunks": [{"content": m["content"], "position": 0, "isRelevant": True, "score": sim}],
+                    "createdAt": m["metadata"].get("created_at", ""),
+                    "updatedAt": m["metadata"].get("updated_at", ""),
+                })
         return res[:limit]
 
     def list_memories(self, container_tag: str, limit: int = 50, offset: int = 0) -> list[dict]:
-        items = [m for m in self._memories.values() if m["containerTag"] == container_tag]
-        return items[offset: offset + limit]
+        # Real API has no bulk-list endpoint; the mock matches that.
+        return []
 
     def get_memory(self, memory_id: str) -> dict | None:
         return self._memories.get(memory_id)
 
     def health(self) -> dict:
         return {"status": "ok"}
-
-    def profile(self) -> dict:
-        return {}
 
     def ping(self, timeout: float = 2.0) -> tuple[bool, str]:
         return True, ""

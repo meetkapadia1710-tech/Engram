@@ -105,9 +105,17 @@ export default function EventsPage() {
                 animate={{ opacity: 1 }}
                 className="card overflow-hidden"
               >
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
-                  className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-surface-2/40 transition"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setExpandedId(expandedId === event.id ? null : event.id);
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-surface-2/40 transition cursor-pointer"
                 >
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ${EVENT_COLORS[event.type] ?? "bg-surface-2 text-muted"}`}>
                     {event.type}
@@ -133,7 +141,7 @@ export default function EventsPage() {
                   ) : (
                     <ChevronRight className="size-3.5 text-faint shrink-0" />
                   )}
-                </button>
+                </div>
 
                 <AnimatePresence>
                   {expandedId === event.id && (

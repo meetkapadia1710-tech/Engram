@@ -1,0 +1,73 @@
+INFO:     Started server process [69364]
+INFO:     Waiting for application startup.
+{"ts":"2026-07-15 04:20:09,537","level":"INFO","logger":"engram","msg":"engram 0.1.0 ready (db=sqlite, embed=local, gen=local, auth=open/dev)"}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+{"ts":"2026-07-15 04:20:12,265","level":"INFO","logger":"httpx","msg":"HTTP Request: GET http://localhost:6767/v3/health "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:20:12,267","level":"INFO","logger":"engram","msg":"GET /health -> 200 (2030.5ms)"}
+{"ts":"2026-07-15 04:20:24,699","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 201 (21.6ms)"}
+{"ts":"2026-07-15 04:20:25,086","level":"INFO","logger":"app.supermemory_client","msg":"Saving memory... container=d9f9cba21d654bec94e872a193b89f7f"}
+{"ts":"2026-07-15 04:20:27,190","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/documents "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:20:27,191","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Memory queued for indexing."}
+{"ts":"2026-07-15 04:20:27,198","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/d9f9cba21d654bec94e872a193b89f7f/memories -> 201 (2134.8ms)"}
+{"ts":"2026-07-15 04:20:27,940","level":"INFO","logger":"app.supermemory_client","msg":"Deleting... id=6e63222e1f894909b5519389825bc769"}
+{"ts":"2026-07-15 04:20:27,954","level":"INFO","logger":"httpx","msg":"HTTP Request: DELETE http://localhost:6767/v3/documents/6e63222e1f894909b5519389825bc769 "HTTP/1.1 409 Conflict""}
+{"ts":"2026-07-15 04:20:28,969","level":"INFO","logger":"httpx","msg":"HTTP Request: DELETE http://localhost:6767/v3/documents/6e63222e1f894909b5519389825bc769 "HTTP/1.1 409 Conflict""}
+{"ts":"2026-07-15 04:20:28,970","level":"WARNING","logger":"engram.memories","msg":"Supermemory delete deferred: document still indexing; local state already reflects the change"}
+{"ts":"2026-07-15 04:20:28,978","level":"INFO","logger":"engram","msg":"DELETE /v1/memories/6e63222e1f894909b5519389825bc769 -> 204 (1045.7ms)"}
+{"ts":"2026-07-15 04:20:29,689","level":"INFO","logger":"engram","msg":"GET /v1/memories/6e63222e1f894909b5519389825bc769 -> 404 (4.2ms)"}
+{"ts":"2026-07-15 04:20:43,290","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 201 (8.2ms)"}
+{"ts":"2026-07-15 04:20:43,647","level":"INFO","logger":"app.supermemory_client","msg":"Saving memory... container=49447136a9fa423fba099f9dcd70c5f7"}
+{"ts":"2026-07-15 04:20:45,743","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/documents "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:20:45,744","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Memory queued for indexing."}
+{"ts":"2026-07-15 04:20:45,749","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/49447136a9fa423fba099f9dcd70c5f7/memories -> 201 (2107.6ms)"}
+{"ts":"2026-07-15 04:20:46,474","level":"INFO","logger":"app.supermemory_client","msg":"Updating... id=f8d3104160ae4aae93674d433bf7e491"}
+{"ts":"2026-07-15 04:20:46,523","level":"INFO","logger":"httpx","msg":"HTTP Request: PATCH http://localhost:6767/v3/documents/f8d3104160ae4aae93674d433bf7e491 "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:20:46,530","level":"INFO","logger":"engram","msg":"PATCH /v1/memories/f8d3104160ae4aae93674d433bf7e491 -> 200 (62.9ms)"}
+{"ts":"2026-07-15 04:22:37,993","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces -> 200 (0.5ms)"}
+{"ts":"2026-07-15 04:22:38,014","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (16.7ms)"}
+{"ts":"2026-07-15 04:22:38,037","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (0.4ms)"}
+{"ts":"2026-07-15 04:22:38,040","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.2ms)"}
+{"ts":"2026-07-15 04:22:38,056","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (12.8ms)"}
+{"ts":"2026-07-15 04:22:38,090","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (30.5ms)"}
+{"ts":"2026-07-15 04:23:03,957","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.3ms)"}
+{"ts":"2026-07-15 04:23:03,993","level":"INFO","logger":"app.supermemory_client","msg":"Saving memory... container=08c210ba5fd54e8289b96f20a8426e1a"}
+{"ts":"2026-07-15 04:23:06,108","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/documents "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:23:06,109","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Memory queued for indexing."}
+{"ts":"2026-07-15 04:23:06,117","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 201 (2153.7ms)"}
+{"ts":"2026-07-15 04:23:06,145","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (21.8ms)"}
+{"ts":"2026-07-15 04:23:06,174","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (50.7ms)"}
+{"ts":"2026-07-15 04:23:06,190","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (65.4ms)"}
+{"ts":"2026-07-15 04:23:44,163","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (55.3ms)"}
+{"ts":"2026-07-15 04:23:44,224","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (0.5ms)"}
+{"ts":"2026-07-15 04:23:44,291","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=Supermemory Local integration"}
+{"ts":"2026-07-15 04:23:46,383","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/search "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:23:46,384","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Search complete."}
+{"ts":"2026-07-15 04:23:46,398","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (2161.7ms)"}
+{"ts":"2026-07-15 04:24:41,736","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (14.3ms)"}
+{"ts":"2026-07-15 04:24:41,795","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=Supermemory Local integration"}
+{"ts":"2026-07-15 04:24:43,909","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/search "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:24:43,910","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Search complete."}
+{"ts":"2026-07-15 04:24:43,919","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (2127.3ms)"}
+{"ts":"2026-07-15 04:24:45,501","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (11.3ms)"}
+{"ts":"2026-07-15 04:24:45,554","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=Supermemory Local integration"}
+{"ts":"2026-07-15 04:24:45,587","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/search "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:24:45,588","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Search complete."}
+{"ts":"2026-07-15 04:24:45,598","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (47.6ms)"}
+{"ts":"2026-07-15 04:29:18,520","level":"INFO","logger":"engram","msg":"OPTIONS /health -> 200 (1.7ms)"}
+{"ts":"2026-07-15 04:29:18,537","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (18.4ms)"}
+{"ts":"2026-07-15 04:29:20,568","level":"INFO","logger":"httpx","msg":"HTTP Request: GET http://localhost:6767/v3/health "HTTP/1.1 200 OK""}
+{"ts":"2026-07-15 04:29:20,569","level":"INFO","logger":"engram","msg":"GET /health -> 200 (2044.3ms)"}
+{"ts":"2026-07-15 04:29:49,313","level":"INFO","logger":"engram","msg":"OPTIONS /v1/events/dlq -> 200 (5.4ms)"}
+{"ts":"2026-07-15 04:29:49,331","level":"INFO","logger":"engram","msg":"OPTIONS /v1/events/types -> 200 (0.2ms)"}
+{"ts":"2026-07-15 04:29:49,360","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (22.2ms)"}
+{"ts":"2026-07-15 04:29:49,386","level":"INFO","logger":"engram","msg":"GET /v1/events/dlq -> 200 (22.1ms)"}
+{"ts":"2026-07-15 04:29:49,391","level":"INFO","logger":"engram","msg":"GET /v1/events/types -> 200 (1.0ms)"}
+{"ts":"2026-07-15 04:29:49,398","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/events -> 200 (0.3ms)"}
+{"ts":"2026-07-15 04:29:49,422","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/events -> 200 (19.5ms)"}
+{"ts":"2026-07-15 05:41:44,763","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces -> 200 (7.7ms)"}
+{"ts":"2026-07-15 05:41:44,812","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (35.8ms)"}
+{"ts":"2026-07-15 05:41:44,829","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (0.2ms)"}
+{"ts":"2026-07-15 05:41:44,831","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.1ms)"}
+{"ts":"2026-07-15 05:41:44,855","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (22.0ms)"}
+{"ts":"2026-07-15 05:41:44,901","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (44.7ms)"}

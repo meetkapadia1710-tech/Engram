@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Server, ShieldCheck, Cpu } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Server, ShieldCheck, Cpu } from "lucide-react";
 import { api } from "@/lib/api";
 import { useWorkspace } from "@/app/providers";
 
@@ -16,7 +16,11 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function SettingsPage() {
   const { workspace } = useWorkspace();
-  const { data: health } = useQuery({ queryKey: ["health"], queryFn: api.health });
+  const { data: health } = useQuery({
+    queryKey: ["health"],
+    queryFn: api.health,
+    refetchInterval: 10_000, // Supermemory reachability can change between page loads
+  });
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -32,12 +36,16 @@ export default function SettingsPage() {
         <Row
           label="API status"
           value={
-            health ? (
+            !health ? (
+              "connecting…"
+            ) : health.status === "ok" ? (
               <span className="flex items-center gap-1.5 text-green">
                 <CheckCircle2 className="size-3.5" /> healthy · v{health.version}
               </span>
             ) : (
-              "connecting…"
+              <span className="flex items-center gap-1.5 text-amber">
+                <AlertTriangle className="size-3.5" /> degraded · v{health.version}
+              </span>
             )
           }
         />
@@ -47,10 +55,41 @@ export default function SettingsPage() {
 
       <div className="card mb-4 p-5">
         <h2 className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+          <Server className="size-4 text-accent" /> Supermemory Local
+        </h2>
+        <Row
+          label="Reachable"
+          value={
+            !health ? (
+              "…"
+            ) : health.dependencies.supermemory.reachable ? (
+              <span className="flex items-center gap-1.5 text-green">
+                <CheckCircle2 className="size-3.5" /> yes
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-amber">
+                <AlertTriangle className="size-3.5" /> no
+              </span>
+            )
+          }
+        />
+        <Row label="URL" value={<code className="font-mono text-[12px]">{health?.dependencies.supermemory.url ?? "…"}</code>} />
+        <Row label="Latency" value={health ? `${health.dependencies.supermemory.latency_ms}ms` : "…"} />
+        {health && !health.dependencies.supermemory.reachable && (
+          <p className="mt-3 text-[12px] leading-relaxed text-amber">
+            {health.dependencies.supermemory.error ?? "Unreachable"} — memory creation, updates,
+            deletes, and search all depend on Supermemory Local; start it and this page will
+            recover automatically.
+          </p>
+        )}
+      </div>
+
+      <div className="card mb-4 p-5">
+        <h2 className="mb-2 flex items-center gap-2 text-[13px] font-medium">
           <Cpu className="size-4 text-cyan" /> AI providers
         </h2>
-        <Row label="Embeddings" value={<code className="font-mono text-[12px]">{(health as { embedding_provider?: string })?.embedding_provider ?? "…"}</code>} />
-        <Row label="Generation" value={<code className="font-mono text-[12px]">{(health as { generation_provider?: string })?.generation_provider ?? "…"}</code>} />
+        <Row label="Embeddings" value={<code className="font-mono text-[12px]">{health?.embedding_provider ?? "…"}</code>} />
+        <Row label="Generation" value={<code className="font-mono text-[12px]">{health?.generation_provider ?? "…"}</code>} />
         <p className="mt-3 text-[12px] leading-relaxed text-faint">
           Switch providers with <code className="font-mono">ENGRAM_EMBEDDING_PROVIDER</code> /{" "}
           <code className="font-mono">ENGRAM_GENERATION_PROVIDER</code> (local, openai,

@@ -1,0 +1,27 @@
+
+> @engram/web@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.20
+   - Local:        http://localhost:3000
+   - Network:      http://172.16.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 3.2s
+ ○ Compiling / ...
+ ✓ Compiled / in 11.9s (1571 modules)
+ GET / 200 in 201ms
+ ○ Compiling /settings ...
+ ✓ Compiled /settings in 1039ms (1590 modules)
+ GET /settings 200 in 1855ms
+ ○ Compiling /events ...
+ ✓ Compiled /events in 916ms (1593 modules)
+ GET /events 200 in 1450ms
+ GET / 200 in 1043ms
+ ○ Compiling /search ...
+ ✓ Compiled /graph in 6.6s (1625 modules)
+ GET /graph 200 in 6567ms
+ GET /search 200 in 7363ms
+ GET /search 200 in 75ms
+ GET /search 200 in 67ms
+ GET /search 200 in 146ms

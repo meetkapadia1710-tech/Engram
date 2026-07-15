@@ -2,6 +2,7 @@ import type {
   Analytics,
   ContextResult,
   GraphData,
+  HealthResponse,
   Memory,
   SearchResult,
   Workspace,
@@ -29,7 +30,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  health: () => request<{ status: string; version: string }>("/health"),
+  health: () => request<HealthResponse>("/health"),
 
   // ── Workspaces ────────────────────────────────────────────────────────────
   listWorkspaces: () =>

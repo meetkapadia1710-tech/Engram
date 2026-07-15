@@ -11,6 +11,7 @@ clobber a field another code path relies on.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -23,8 +24,25 @@ from ..models import Memory, Workspace
 from ..pipeline import ingest_memory
 from ..schemas import MEMORY_TYPES, MemoryCreate, MemoryOut, MemoryUpdate
 from ..security import Guard, audit, guard
+from ..supermemory_client import DocumentProcessingConflict
 
 router = APIRouter(prefix="/v1", tags=["memories"])
+log = logging.getLogger("engram.memories")
+
+
+def _sync_to_store(action_name: str, fn) -> None:
+    """Run a Supermemory update/delete, tolerating a transient "still
+    processing" conflict (see DocumentProcessingConflict) — the local
+    SQLite mirror already reflects the user's intended state, so this
+    shouldn't fail their request; any other error is a real problem and
+    still propagates."""
+    try:
+        fn()
+    except DocumentProcessingConflict:
+        log.warning(
+            "Supermemory %s deferred: document still indexing; local state "
+            "already reflects the change", action_name,
+        )
 
 
 def memory_out(m: Memory) -> MemoryOut:
@@ -129,7 +147,7 @@ def update_memory(memory_id: str, body: MemoryUpdate, g: Guard = Depends(guard))
     m.updated_at = datetime.now(timezone.utc).isoformat()
 
     store = get_memory_store(g.db)
-    store.update(m.workspace_id, m.id, m.content, build_full_metadata(m))
+    _sync_to_store("update", lambda: store.update(m.workspace_id, m.id, m.content, build_full_metadata(m)))
 
     audit(g.db, actor=g.actor, action="memory.update", workspace_id=m.workspace_id, detail=m.id)
     emit(g.db, "MemoryUpdated", {"memory_id": m.id}, workspace_id=m.workspace_id)
@@ -143,7 +161,7 @@ def delete_memory(memory_id: str, g: Guard = Depends(guard)):
     audit(g.db, actor=g.actor, action="memory.delete", workspace_id=m.workspace_id, detail=m.id)
     emit(g.db, "MemoryDeleted", {"memory_id": m.id}, workspace_id=m.workspace_id)
     store = get_memory_store(g.db)
-    store.delete(m.workspace_id, m.id)
+    _sync_to_store("delete", lambda: store.delete(m.workspace_id, m.id))
     g.db.delete(m)
     g.db.commit()
 
@@ -183,7 +201,7 @@ def compress(workspace_id: str, g: Guard = Depends(guard), older_than_days: int 
             if not m.summary:
                 m.summary = m.content[:280]
             m.updated_at = datetime.now(timezone.utc).isoformat()
-            store.update(m.workspace_id, m.id, m.content, build_full_metadata(m))
+            _sync_to_store("compress-update", lambda m=m: store.update(m.workspace_id, m.id, m.content, build_full_metadata(m)))
             archived_count += 1
 
     audit(g.db, actor=g.actor, action="workspace.compress", workspace_id=workspace_id,

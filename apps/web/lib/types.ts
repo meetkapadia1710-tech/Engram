@@ -77,3 +77,18 @@ export interface ContextResult {
   sources: { n: number; id: string; title: string; type: string; created_at: string; score: number }[];
   approx_tokens: number;
 }
+
+export interface HealthResponse {
+  status: "ok" | "degraded";
+  version: string;
+  embedding_provider: string;
+  generation_provider: string;
+  dependencies: {
+    supermemory: {
+      reachable: boolean;
+      url: string;
+      latency_ms: number;
+      error: string | null;
+    };
+  };
+}
