@@ -1,73 +1,363 @@
-INFO:     Started server process [69364]
+INFO:     Started server process [24312]
 INFO:     Waiting for application startup.
-{"ts":"2026-07-15 04:20:09,537","level":"INFO","logger":"engram","msg":"engram 0.1.0 ready (db=sqlite, embed=local, gen=local, auth=open/dev)"}
+{"ts":"2026-07-15 06:08:50,277","level":"INFO","logger":"engram","msg":"engram 0.1.0 ready (db=sqlite, embed=local, gen=local, auth=open/dev)"}
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-{"ts":"2026-07-15 04:20:12,265","level":"INFO","logger":"httpx","msg":"HTTP Request: GET http://localhost:6767/v3/health "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:20:12,267","level":"INFO","logger":"engram","msg":"GET /health -> 200 (2030.5ms)"}
-{"ts":"2026-07-15 04:20:24,699","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 201 (21.6ms)"}
-{"ts":"2026-07-15 04:20:25,086","level":"INFO","logger":"app.supermemory_client","msg":"Saving memory... container=d9f9cba21d654bec94e872a193b89f7f"}
-{"ts":"2026-07-15 04:20:27,190","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/documents "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:20:27,191","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Memory queued for indexing."}
-{"ts":"2026-07-15 04:20:27,198","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/d9f9cba21d654bec94e872a193b89f7f/memories -> 201 (2134.8ms)"}
-{"ts":"2026-07-15 04:20:27,940","level":"INFO","logger":"app.supermemory_client","msg":"Deleting... id=6e63222e1f894909b5519389825bc769"}
-{"ts":"2026-07-15 04:20:27,954","level":"INFO","logger":"httpx","msg":"HTTP Request: DELETE http://localhost:6767/v3/documents/6e63222e1f894909b5519389825bc769 "HTTP/1.1 409 Conflict""}
-{"ts":"2026-07-15 04:20:28,969","level":"INFO","logger":"httpx","msg":"HTTP Request: DELETE http://localhost:6767/v3/documents/6e63222e1f894909b5519389825bc769 "HTTP/1.1 409 Conflict""}
-{"ts":"2026-07-15 04:20:28,970","level":"WARNING","logger":"engram.memories","msg":"Supermemory delete deferred: document still indexing; local state already reflects the change"}
-{"ts":"2026-07-15 04:20:28,978","level":"INFO","logger":"engram","msg":"DELETE /v1/memories/6e63222e1f894909b5519389825bc769 -> 204 (1045.7ms)"}
-{"ts":"2026-07-15 04:20:29,689","level":"INFO","logger":"engram","msg":"GET /v1/memories/6e63222e1f894909b5519389825bc769 -> 404 (4.2ms)"}
-{"ts":"2026-07-15 04:20:43,290","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 201 (8.2ms)"}
-{"ts":"2026-07-15 04:20:43,647","level":"INFO","logger":"app.supermemory_client","msg":"Saving memory... container=49447136a9fa423fba099f9dcd70c5f7"}
-{"ts":"2026-07-15 04:20:45,743","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/documents "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:20:45,744","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Memory queued for indexing."}
-{"ts":"2026-07-15 04:20:45,749","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/49447136a9fa423fba099f9dcd70c5f7/memories -> 201 (2107.6ms)"}
-{"ts":"2026-07-15 04:20:46,474","level":"INFO","logger":"app.supermemory_client","msg":"Updating... id=f8d3104160ae4aae93674d433bf7e491"}
-{"ts":"2026-07-15 04:20:46,523","level":"INFO","logger":"httpx","msg":"HTTP Request: PATCH http://localhost:6767/v3/documents/f8d3104160ae4aae93674d433bf7e491 "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:20:46,530","level":"INFO","logger":"engram","msg":"PATCH /v1/memories/f8d3104160ae4aae93674d433bf7e491 -> 200 (62.9ms)"}
-{"ts":"2026-07-15 04:22:37,993","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces -> 200 (0.5ms)"}
-{"ts":"2026-07-15 04:22:38,014","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (16.7ms)"}
-{"ts":"2026-07-15 04:22:38,037","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (0.4ms)"}
-{"ts":"2026-07-15 04:22:38,040","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.2ms)"}
-{"ts":"2026-07-15 04:22:38,056","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (12.8ms)"}
-{"ts":"2026-07-15 04:22:38,090","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (30.5ms)"}
-{"ts":"2026-07-15 04:23:03,957","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.3ms)"}
-{"ts":"2026-07-15 04:23:03,993","level":"INFO","logger":"app.supermemory_client","msg":"Saving memory... container=08c210ba5fd54e8289b96f20a8426e1a"}
-{"ts":"2026-07-15 04:23:06,108","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/documents "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:23:06,109","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Memory queued for indexing."}
-{"ts":"2026-07-15 04:23:06,117","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 201 (2153.7ms)"}
-{"ts":"2026-07-15 04:23:06,145","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (21.8ms)"}
-{"ts":"2026-07-15 04:23:06,174","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (50.7ms)"}
-{"ts":"2026-07-15 04:23:06,190","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (65.4ms)"}
-{"ts":"2026-07-15 04:23:44,163","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (55.3ms)"}
-{"ts":"2026-07-15 04:23:44,224","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (0.5ms)"}
-{"ts":"2026-07-15 04:23:44,291","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=Supermemory Local integration"}
-{"ts":"2026-07-15 04:23:46,383","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/search "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:23:46,384","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Search complete."}
-{"ts":"2026-07-15 04:23:46,398","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (2161.7ms)"}
-{"ts":"2026-07-15 04:24:41,736","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (14.3ms)"}
-{"ts":"2026-07-15 04:24:41,795","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=Supermemory Local integration"}
-{"ts":"2026-07-15 04:24:43,909","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/search "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:24:43,910","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Search complete."}
-{"ts":"2026-07-15 04:24:43,919","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (2127.3ms)"}
-{"ts":"2026-07-15 04:24:45,501","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (11.3ms)"}
-{"ts":"2026-07-15 04:24:45,554","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=Supermemory Local integration"}
-{"ts":"2026-07-15 04:24:45,587","level":"INFO","logger":"httpx","msg":"HTTP Request: POST http://localhost:6767/v3/search "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:24:45,588","level":"INFO","logger":"app.supermemory_client","msg":"Received response... Search complete."}
-{"ts":"2026-07-15 04:24:45,598","level":"INFO","logger":"engram","msg":"POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search -> 200 (47.6ms)"}
-{"ts":"2026-07-15 04:29:18,520","level":"INFO","logger":"engram","msg":"OPTIONS /health -> 200 (1.7ms)"}
-{"ts":"2026-07-15 04:29:18,537","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (18.4ms)"}
-{"ts":"2026-07-15 04:29:20,568","level":"INFO","logger":"httpx","msg":"HTTP Request: GET http://localhost:6767/v3/health "HTTP/1.1 200 OK""}
-{"ts":"2026-07-15 04:29:20,569","level":"INFO","logger":"engram","msg":"GET /health -> 200 (2044.3ms)"}
-{"ts":"2026-07-15 04:29:49,313","level":"INFO","logger":"engram","msg":"OPTIONS /v1/events/dlq -> 200 (5.4ms)"}
-{"ts":"2026-07-15 04:29:49,331","level":"INFO","logger":"engram","msg":"OPTIONS /v1/events/types -> 200 (0.2ms)"}
-{"ts":"2026-07-15 04:29:49,360","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (22.2ms)"}
-{"ts":"2026-07-15 04:29:49,386","level":"INFO","logger":"engram","msg":"GET /v1/events/dlq -> 200 (22.1ms)"}
-{"ts":"2026-07-15 04:29:49,391","level":"INFO","logger":"engram","msg":"GET /v1/events/types -> 200 (1.0ms)"}
-{"ts":"2026-07-15 04:29:49,398","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/events -> 200 (0.3ms)"}
-{"ts":"2026-07-15 04:29:49,422","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/events -> 200 (19.5ms)"}
-{"ts":"2026-07-15 05:41:44,763","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces -> 200 (7.7ms)"}
-{"ts":"2026-07-15 05:41:44,812","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (35.8ms)"}
-{"ts":"2026-07-15 05:41:44,829","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (0.2ms)"}
-{"ts":"2026-07-15 05:41:44,831","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.1ms)"}
-{"ts":"2026-07-15 05:41:44,855","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (22.0ms)"}
-{"ts":"2026-07-15 05:41:44,901","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (44.7ms)"}
+{"ts":"2026-07-15 06:09:10,064","level":"WARNING","logger":"app.supermemory_client","msg":"Supermemory unreachable: timed out"}
+{"ts":"2026-07-15 06:09:10,084","level":"INFO","logger":"engram","msg":"GET /health -> 200 (4056.5ms)"}
+{"ts":"2026-07-15 06:10:07,375","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (19.3ms)"}
+{"ts":"2026-07-15 06:10:53,121","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/fcffe6bcd3dc4e0eaab31f4754d80b1c -> 204 (27.3ms)"}
+{"ts":"2026-07-15 06:10:54,426","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/7b9fc44131884d7d92e9e00c323cc5a4 -> 204 (14.8ms)"}
+{"ts":"2026-07-15 06:10:55,752","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/781eb720653243048a0e505a58297f54 -> 204 (17.4ms)"}
+{"ts":"2026-07-15 06:10:57,259","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/2cd563c681584e7d8776d9e3b2539548 -> 204 (23.1ms)"}
+{"ts":"2026-07-15 06:10:58,781","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/c782420f078d43c3971e2f1fe355f7b7 -> 204 (11.7ms)"}
+{"ts":"2026-07-15 06:11:00,153","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/d9f9cba21d654bec94e872a193b89f7f -> 204 (36.9ms)"}
+{"ts":"2026-07-15 06:11:01,653","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/49447136a9fa423fba099f9dcd70c5f7 -> 204 (85.0ms)"}
+{"ts":"2026-07-15 06:11:18,794","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces -> 200 (0.3ms)"}
+{"ts":"2026-07-15 06:11:18,802","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (4.0ms)"}
+{"ts":"2026-07-15 06:11:18,828","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (0.3ms)"}
+{"ts":"2026-07-15 06:11:18,831","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.8ms)"}
+{"ts":"2026-07-15 06:11:18,850","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (16.0ms)"}
+{"ts":"2026-07-15 06:11:18,880","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (26.6ms)"}
+{"ts":"2026-07-15 06:12:13,776","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (6.0ms)"}
+{"ts":"2026-07-15 06:12:13,846","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (12.4ms)"}
+{"ts":"2026-07-15 06:12:13,984","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (148.5ms)"}
+{"ts":"2026-07-15 06:14:51,911","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (5.7ms)"}
+{"ts":"2026-07-15 06:14:52,028","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (18.8ms)"}
+{"ts":"2026-07-15 06:14:52,063","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (31.1ms)"}
+{"ts":"2026-07-15 06:18:36,944","level":"WARNING","logger":"app.supermemory_client","msg":"Supermemory unreachable: timed out"}
+{"ts":"2026-07-15 06:18:36,946","level":"INFO","logger":"engram","msg":"GET /health -> 200 (4017.8ms)"}
+{"ts":"2026-07-15 06:18:37,451","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 201 (179.6ms)"}
+{"ts":"2026-07-15 06:18:49,364","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 409 (4.7ms)"}
+{"ts":"2026-07-15 06:19:00,472","level":"INFO","logger":"engram","msg":"POST /v1/workspaces -> 201 (8.1ms)"}
+{"ts":"2026-07-15 06:19:11,443","level":"INFO","logger":"engram","msg":"DELETE /v1/workspaces/9ba68c9c4cb948febadbf26357c03c31 -> 204 (7.9ms)"}
+{"ts":"2026-07-15 06:19:11,982","level":"INFO","logger":"app.supermemory_client","msg":"Searching... query=docker caching"}
+{"ts":"2026-07-15 06:19:16,059","level":"ERROR","logger":"app.supermemory_client","msg":"Supermemory connection error: [WinError 10061] No connection could be made because the target machine actively refused it"}
+{"ts":"2026-07-15 06:19:16,062","level":"ERROR","logger":"engram","msg":"unhandled error on POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search"}
+Traceback (most recent call last):
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection.py", line 101, in handle_request
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection.py", line 78, in handle_request
+    stream = self._connect(request)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection.py", line 124, in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_backends\sync.py", line 207, in connect_tcp
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 185, in __call__
+    with collapse_excgroups():
+         ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 187, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Documents\LocalHost\services\api\app\main.py", line 96, in request_logging
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 163, in call_next
+    raise app_exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\concurrency.py", line 39, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2505, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 1005, in run
+    result = context.run(func, *args)
+  File "C:\Documents\LocalHost\services\api\app\routers\search.py", line 29, in search
+    hits = hybrid_search(
+        g.db, workspace_id, body.query,
+        limit=body.limit, mode=body.mode, types=body.types, tags=body.tags,
+        entities=body.entities, date_from=body.date_from, date_to=body.date_to,
+    )
+  File "C:\Documents\LocalHost\services\api\app\search.py", line 197, in hybrid_search
+    candidates = store.search(workspace_id, query, limit=limit * 3)
+  File "C:\Documents\LocalHost\services\api\app\db.py", line 188, in search
+    results = self.client.search_memory(query, container_tag=workspace_id, limit=limit)
+  File "C:\Documents\LocalHost\services\api\app\supermemory_client.py", line 163, in search_memory
+    self._handle_error(e)
+    ~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Documents\LocalHost\services\api\app\supermemory_client.py", line 85, in _handle_error
+    raise e
+  File "C:\Documents\LocalHost\services\api\app\supermemory_client.py", line 152, in search_memory
+    resp = self.client.post("/v3/search", json=payload)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1144, in post
+    return self.request(
+           ~~~~~~~~~~~~^
+        "POST",
+        ^^^^^^^
+    ...<11 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection.py", line 101, in handle_request
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection.py", line 78, in handle_request
+    stream = self._connect(request)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_sync\connection.py", line 124, in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_backends\sync.py", line 207, in connect_tcp
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 185, in __call__
+    with collapse_excgroups():
+         ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 187, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Documents\LocalHost\services\api\app\main.py", line 96, in request_logging
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 163, in call_next
+    raise app_exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\concurrency.py", line 39, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2505, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 1005, in run
+    result = context.run(func, *args)
+  File "C:\Documents\LocalHost\services\api\app\routers\search.py", line 29, in search
+    hits = hybrid_search(
+        g.db, workspace_id, body.query,
+        limit=body.limit, mode=body.mode, types=body.types, tags=body.tags,
+        entities=body.entities, date_from=body.date_from, date_to=body.date_to,
+    )
+  File "C:\Documents\LocalHost\services\api\app\search.py", line 197, in hybrid_search
+    candidates = store.search(workspace_id, query, limit=limit * 3)
+  File "C:\Documents\LocalHost\services\api\app\db.py", line 188, in search
+    results = self.client.search_memory(query, container_tag=workspace_id, limit=limit)
+  File "C:\Documents\LocalHost\services\api\app\supermemory_client.py", line 163, in search_memory
+    self._handle_error(e)
+    ~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Documents\LocalHost\services\api\app\supermemory_client.py", line 85, in _handle_error
+    raise e
+  File "C:\Documents\LocalHost\services\api\app\supermemory_client.py", line 152, in search_memory
+    resp = self.client.post("/v3/search", json=payload)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1144, in post
+    return self.request(
+           ~~~~~~~~~~~~^
+        "POST",
+        ^^^^^^^
+    ...<11 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\meetk\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+{"ts":"2026-07-15 06:21:35,741","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces -> 200 (0.2ms)"}
+{"ts":"2026-07-15 06:21:35,752","level":"INFO","logger":"engram","msg":"GET /v1/workspaces -> 200 (6.5ms)"}
+{"ts":"2026-07-15 06:21:35,806","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (0.2ms)"}
+{"ts":"2026-07-15 06:21:35,810","level":"INFO","logger":"engram","msg":"OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (0.3ms)"}
+{"ts":"2026-07-15 06:21:35,821","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics -> 200 (8.3ms)"}
+{"ts":"2026-07-15 06:21:35,851","level":"INFO","logger":"engram","msg":"GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories -> 200 (26.5ms)"}

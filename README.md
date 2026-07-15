@@ -4,7 +4,8 @@
 
 **The memory layer for AI. Every interaction becomes knowledge.**
 
-[![Tests](https://img.shields.io/badge/tests-30%20passed-brightgreen)](#testing)
+[![Tests](https://img.shields.io/badge/tests-115%20passed-brightgreen)](#testing)
+[![CI](https://github.com/engram/engram/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](#quickstart)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](#license)
 [![Powered by Supermemory](https://img.shields.io/badge/powered%20by-Supermemory-8B5CF6)](https://supermemory.ai)
@@ -27,7 +28,7 @@ Engram is an intelligent application layer built on top of **[Supermemory Local]
                ▼
     ┌─────────────────────┐
     │  Supermemory Local   │  vector storage · semantic search
-    │     (:6767)          │  container tagging · v4 API
+    │     (:6767)          │  container tagging · v3 API
     └─────────────────────┘
 ```
 
@@ -37,7 +38,7 @@ Engram is an intelligent application layer built on top of **[Supermemory Local]
 
 | Capability | Details |
 |---|---|
-| 🧠 **Supermemory Native** | Uses Supermemory Local as its sole storage engine — no separate vector DB or FTS index to manage |
+| 🧠 **Supermemory Native** | Supermemory Local is the durable content + semantic search engine — no separate vector DB to run or manage |
 | 🕸 **Knowledge Graph** | Every memory's extracted entities (people, projects, tech, orgs) become graph nodes, auto-linked by cosine similarity and co-occurrence |
 | ⏱ **Temporal Reasoning** | Recency decay, time-scoped recall, full memory timeline, and `forgetAfter` TTL support via Supermemory container tags |
 | 🤖 **Multi-Agent Orchestration** | Define agent teams with goals; Engram routes tasks and merges their conclusions back into memory |
@@ -46,7 +47,7 @@ Engram is an intelligent application layer built on top of **[Supermemory Local]
 | 🪄 **RAG-Ready** | `/v1/context` assembles a cited, token-budgeted context block for any LLM prompt in one HTTP call |
 | 👤 **Digital Twin** | Infers skill scores, productivity patterns, cognitive gaps, and future predictions from your memory history |
 | 📊 **AI Evaluation** | On-demand evaluation reports: retrieval quality, hallucination rate, grounding accuracy, NDCG ranking |
-| 🔒 **Production Ready** | API-key auth, rate limiting, audit log, multi-tenancy, OpenAPI docs, Docker Compose, 30-test CI suite |
+| 🔒 **Production Ready** | API-key auth, rate limiting, audit log, multi-tenancy, OpenAPI docs, Docker Compose, 115-test CI suite |
 
 ---
 
@@ -74,7 +75,7 @@ services/api/       FastAPI backend
   ├── app/rag.py      RAG context builder
   ├── app/graph.py    Knowledge graph builder
   ├── app/db.py       MemoryStore abstraction → SupermemoryStore
-  ├── app/supermemory_client.py  Supermemory v4 HTTP client
+  ├── app/supermemory_client.py  Supermemory v3 HTTP client
   ├── app/evaluation.py  AI Evaluation Engine
   ├── app/digital_twin.py Digital Twin profile generation
   ├── app/knowledge_evolution.py Knowledge evolution & insights
@@ -83,7 +84,7 @@ services/api/       FastAPI backend
 
 sdk/go/             Go SDK
   ├── engram/         High-level Engram API client
-  └── supermemory/    Low-level Supermemory v4 client
+  └── supermemory/    Low-level Supermemory v3 client
 
 sdk/cli/            Python CLI (engram workspace/memory/search/agent/…)
 sdk/python/         Python SDK (Engram class)
@@ -102,6 +103,15 @@ docs/               Architecture · API · deployment · contributing
 
 ## Quickstart
 
+### Prerequisites
+
+| Tool | Version | Needed for |
+|---|---|---|
+| Python | 3.11+ | Engram API |
+| Node.js | 18+ | Web dashboard |
+| Supermemory Local | latest | Durable storage + semantic search (**must be running before the API** — the API's `/health` reports `degraded` and memory create/update/delete/search will fail without it) |
+| Docker + Compose | optional | Only for Option A |
+
 ### Option A — Docker (recommended)
 
 ```bash
@@ -119,6 +129,8 @@ Services started:
 
 ### Option B — Local (no Docker)
 
+Start these **in order** — each later step depends on the one before it.
+
 **1. Start Supermemory Local**
 
 ```bash
@@ -134,9 +146,13 @@ supermemory local
 cd services/api
 pip install -r requirements.txt
 
-# point Engram at your local Supermemory
+# point Engram at your local Supermemory (PowerShell)
 $env:SUPERMEMORY_URL = "http://localhost:6767"
 $env:SUPERMEMORY_API_KEY = "<key-from-step-1>"   # optional if open mode
+
+# bash/zsh equivalent:
+# export SUPERMEMORY_URL="http://localhost:6767"
+# export SUPERMEMORY_API_KEY="<key-from-step-1>"
 
 py -m uvicorn app.main:app --port 8000 --reload
 # → API docs at http://localhost:8000/docs
@@ -157,19 +173,47 @@ npm run dev
 py scripts/seed.py
 ```
 
+### Verify it's working
+
+```bash
+# Health — "status" is "ok" only when Supermemory is actually reachable
+curl http://localhost:8000/health
+
+# Create a workspace
+curl -X POST http://localhost:8000/v1/workspaces \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Demo"}'
+# → {"id": "<ws-id>", "name": "Demo", "slug": "demo", ...}
+
+# Store a memory (runs the full pipeline: clean → chunk → embed → entities → Supermemory)
+curl -X POST http://localhost:8000/v1/workspaces/<ws-id>/memories \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Docker layers are cached by instruction order.", "type": "note"}'
+
+# Search it (Supermemory indexes asynchronously — allow a few seconds after
+# creation before it's guaranteed to show up in results)
+curl -X POST http://localhost:8000/v1/workspaces/<ws-id>/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "docker caching"}'
+```
+
 ---
 
 ## Supermemory Integration
 
-All memory storage and retrieval is handled by the **Supermemory v4 API**. Engram maps its workspace/memory model to Supermemory's `containerTag` + `metadata` model:
+Engram is a **dual-store architecture**: Supermemory Local is the durable, semantically-searchable content store; a local SQLite mirror is the source of truth for everything the knowledge graph and ranking depend on (entity identity, relationships, access/recency signals). Reads (list, get, graph, analytics) are served locally and stay correct even if Supermemory is temporarily unreachable; only create/update/delete and semantic search candidate discovery talk to Supermemory.
+
+Verified against a live Supermemory Local instance (the real **v3 API**, not the docs-implied v4 — `POST /v3/documents`, `POST /v3/search`, `GET /v3/health`). Engram maps its workspace/memory model to Supermemory's `containerTags` + `metadata` model:
 
 | Engram field | Supermemory field | Notes |
 |---|---|---|
-| `workspace_id` | `containerTag` | Each workspace = isolated container |
+| `workspace_id` | `containerTags` (array) | Each workspace = one container tag |
 | `content` | `content` | Memory body (up to 10k chars) |
-| `id` | `customId` | Deterministic ID for idempotent writes |
-| `type`, `title`, `tags`, … | `metadata.*` | Rich metadata stored as JSON |
+| `id` | `customId` | Deterministic ID for idempotent writes; also usable as the lookup id |
+| `type`, `title`, `tags`, … | `metadata.*` | Metadata values must be scalars or flat string arrays — entities are flattened to `"name::kind"` strings, since Supermemory's schema rejects nested arrays |
 | `created_at` | `metadata.created_at` | Original timestamp preserved |
+
+Indexing is asynchronous: a document can briefly reject an update/delete with `409 "Document is still processing"` right after creation. Engram retries once, then treats it as non-fatal — the local mirror already reflects the change.
 
 ### Environment Variables
 
@@ -433,7 +477,11 @@ raw text
    │
    ▼  generate_summary()   LLM summary for content > 280 chars (optional)
    │
-   ▼  SupermemoryStore.save()   POST /v4/memories  → Supermemory Local
+   ▼  resync_entities_and_relationships()   local SQLite mirror: entity
+   │                                        identity + graph edges (also
+   │                                        re-run on every content edit)
+   │
+   ▼  SupermemoryStore.save()   POST /v3/documents  → Supermemory Local
 ```
 
 ---
@@ -442,14 +490,28 @@ raw text
 
 ```bash
 cd services/api
+pip install -r requirements.txt pytest
 py -m pytest tests/ -v
-# → 30 passed in ~2s (all use an in-memory Supermemory mock — no server needed)
+# → 115 passed in ~10s (an in-memory Supermemory mock stands in for the real
+#   server, shaped to match its actual v3 responses — no server needed)
 ```
 
-Test coverage:
-- `test_api.py` — Full CRUD lifecycle, search, context, analytics, audit log
-- `test_pipeline.py` — Chunking, embeddings, entity extraction, importance scoring, ingest
-- `test_search.py` — BM25, hybrid search, type/tag filters, access count, recency decay
+| File | Tests | Covers |
+|---|---|---|
+| `test_platform_api.py` | 20 | End-to-end HTTP surface: marketplace, agents, workflows, tools, events, observability, digital twin, evolution, evaluation |
+| `test_api.py` | 14 | Memory CRUD lifecycle, search, context, graph, analytics, audit log |
+| `test_pipeline.py` | 13 | Chunking, embeddings, entity extraction, importance scoring, content-edit resync |
+| `test_workflows.py` | 13 | Interpolation, step types, conditions, loops, retries, event triggers |
+| `test_kernel.py` | 11 | Plugin publish/install/update/rollback lifecycle, permissions, quotas, feature flags |
+| `test_search.py` | 7 | BM25, hybrid ranking, type/tag filters, access count, recency decay |
+| `test_events.py` | 7 | Emit/subscribe, retry-to-dead-letter, replay |
+| `test_tools.py` | 7 | Sandbox permission gates, fs jail + path traversal, http allowlist |
+| `test_knowledge_evolution.py` | 7 | Decay, duplicate merge, contradiction detection, insight generation |
+| `test_agents.py` | 6 | Multi-agent plan → research → debate → vote → merge lifecycle |
+| `test_digital_twin.py` | 5 | Skill graph, style ratios, knowledge gaps |
+| `test_evaluation.py` | 5 | Retrieval NDCG, grounding accuracy, agent success rate |
+
+Every fix in this repo's history started from a failing test written against the *real* Supermemory Local API contract (verified live, not assumed) — including the async-indexing race on delete/update, which a mock alone would never have caught.
 
 ---
 
