@@ -7,12 +7,32 @@
    - Network:      http://172.16.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 5s
+ ✓ Ready in 6.1s
  ○ Compiling / ...
- ✓ Compiled / in 4.5s (1557 modules)
- GET / 200 in 6450ms
- GET / 200 in 558ms
- GET / 200 in 257ms
- GET / 200 in 469ms
- GET / 200 in 371ms
- GET / 200 in 235ms
+ ✓ Compiled / in 4s (1557 modules)
+ GET / 200 in 5618ms
+ GET / 200 in 247ms
+ ○ Compiling /search ...
+ ✓ Compiled /search in 1382ms (1568 modules)
+ GET /search?q=docker%20caching 200 in 2755ms
+ ○ Compiling /graph ...
+ ✓ Compiled /graph in 2.3s (1575 modules)
+ GET /graph 200 in 3457ms
+ ○ Compiling /agents ...
+ ✓ Compiled /agents in 595ms (1598 modules)
+ GET /agents 200 in 827ms
+ GET / 200 in 702ms
+ GET / 200 in 761ms
+ GET /search 200 in 182ms
+ GET /graph 200 in 220ms
+ GET / 200 in 108ms
+ ○ Compiling /timeline ...
+ ✓ Compiled /digital-twin in 8.1s (1663 modules)
+ GET /tools 200 in 5993ms
+ GET /timeline 200 in 8475ms
+ GET /digital-twin 200 in 3452ms
+ GET /agents 200 in 7246ms
+ GET /marketplace 200 in 6744ms
+ GET /events 200 in 5110ms
+ GET /agents 200 in 108ms
+ GET / 200 in 1522ms

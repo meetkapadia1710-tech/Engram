@@ -1,33 +1,74 @@
-INFO:     127.0.0.1:55584 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58754 - "GET /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:65178 - "DELETE /v1/workspaces/fcffe6bcd3dc4e0eaab31f4754d80b1c HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:50715 - "DELETE /v1/workspaces/7b9fc44131884d7d92e9e00c323cc5a4 HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:50716 - "DELETE /v1/workspaces/781eb720653243048a0e505a58297f54 HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:50717 - "DELETE /v1/workspaces/2cd563c681584e7d8776d9e3b2539548 HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:50718 - "DELETE /v1/workspaces/c782420f078d43c3971e2f1fe355f7b7 HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:50719 - "DELETE /v1/workspaces/d9f9cba21d654bec94e872a193b89f7f HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:50721 - "DELETE /v1/workspaces/49447136a9fa423fba099f9dcd70c5f7 HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:60622 - "OPTIONS /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60622 - "GET /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60622 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60622 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60622 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60622 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59366 - "GET /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59366 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60947 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64843 - "GET /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64843 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64843 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55998 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56002 - "POST /v1/workspaces HTTP/1.1" 201 Created
-INFO:     127.0.0.1:54463 - "POST /v1/workspaces HTTP/1.1" 409 Conflict
-INFO:     127.0.0.1:54476 - "POST /v1/workspaces HTTP/1.1" 201 Created
-INFO:     127.0.0.1:59813 - "DELETE /v1/workspaces/9ba68c9c4cb948febadbf26357c03c31 HTTP/1.1" 204 No Content
-INFO:     127.0.0.1:59817 - "POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:58722 - "OPTIONS /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58722 - "GET /v1/workspaces HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58722 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58722 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58722 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58722 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50325 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58079 - "POST /v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58080 - "POST /v1/workspaces/522bf94b703c4f6e9ef90ad00ea1a689/memories HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58084 - "POST /v1/workspaces/522bf94b703c4f6e9ef90ad00ea1a689/memories HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58085 - "POST /v1/workspaces/522bf94b703c4f6e9ef90ad00ea1a689/search HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58086 - "GET /v1/workspaces/522bf94b703c4f6e9ef90ad00ea1a689/graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64688 - "POST /v1/workspaces/522bf94b703c4f6e9ef90ad00ea1a689/agents/run HTTP/1.1" 201 Created
+INFO:     127.0.0.1:51907 - "DELETE /v1/workspaces/522bf94b703c4f6e9ef90ad00ea1a689 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:51908 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51913 - "DELETE /v1/workspaces/3b5ba467505a4bd8bdb57723e98faf6e HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:52760 - "OPTIONS /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52760 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52760 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52760 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52760 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52760 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49236 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49236 - "POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49236 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49236 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64831 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/search HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51383 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51383 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51383 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52809 - "OPTIONS /v1/agents/team HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52809 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52809 - "GET /v1/agents/team HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52809 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52809 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "POST /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/run HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61929 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/runs/f01d8a1bbcb345b496502f76dace3b3c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/agents/runs/f01d8a1bbcb345b496502f76dace3b3c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49813 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49817 - "DELETE /v1/memories/2042a2e8e77d4cd4a172e3b11206c439 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:49821 - "DELETE /v1/memories/4c9227a0f8b14c64b65f454b8b8d5818 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:49822 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:49823 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59818 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59818 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55191 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61083 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51061 - "OPTIONS /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51061 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51061 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51061 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51061 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51061 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53359 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52807 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49677 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49677 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49677 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52807 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59624 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59624 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61931 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63995 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57121 - "OPTIONS /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63336 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58369 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58369 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58369 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58369 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "OPTIONS /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "OPTIONS /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "GET /v1/workspaces/08c210ba5fd54e8289b96f20a8426e1a/memories?limit=6 HTTP/1.1" 200 OK

@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     environment:
       ENGRAM_DATABASE_URL: postgresql+psycopg://engram:engram@postgres:5432/engram
-      ENGRAM_CORS_ORIGINS: http://localhost:3000
+      ENGRAM_CORS_ORIGINS: http://localhost:3000,http://localhost:3001
       SUPERMEMORY_URL: http://supermemory:6767
       # ENGRAM_API_KEYS: change-me            # uncomment to require auth
       # ENGRAM_EMBEDDING_PROVIDER: ollama     # local | openai | gemini | ollama
@@ -24,7 +24,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       - api
 
@@ -50,14 +50,14 @@ services:
     ports:
       - "6379:6379"
 
-  supermemory:
-    image: supermemory/local:latest
-    ports:
-      - "6767:6767"
-    volumes:
-      - supermemory-data:/app/data
-    environment:
-      - PORT=6767
+#   supermemory:
+#     image: supermemory/local:latest
+#     ports:
+#       - "6767:6767"
+#     volumes:
+#       - supermemory-data:/app/data
+#     environment:
+#       - PORT=6767
 
 volumes:
   engram-data:
